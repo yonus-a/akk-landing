@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Language } from '../types';
-import { HeroContent } from './HeroContent';
+import { HeroContent, HeroStatsCompact } from './HeroContent';
 import { PorscheShowcase } from './porsche/PorscheShowcase';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
@@ -77,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({
     >
       <div
         ref={stickyRef}
-        className="relative overflow-clip pt-24 sm:pt-28 pb-16 lg:sticky lg:min-h-screen lg:flex lg:items-center"
+        className="relative overflow-clip pt-24 sm:pt-28 pb-4 lg:pb-16 lg:sticky lg:min-h-screen lg:flex lg:items-center"
         style={isDesktop ? { top: stickyTop } : undefined}
         onPointerMove={handleSpotlightMove}
         onPointerLeave={(e) => e.currentTarget.style.setProperty('--spot-opacity', '0')}
@@ -108,10 +108,10 @@ export const Hero: React.FC<HeroProps> = ({
         )}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 lg:pointer-events-none">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-center">
             
             {/* Main Editorial Text Column (right half) */}
-            <div className={`lg:col-span-6 lg:pointer-events-auto ${isRtl ? '' : 'lg:col-start-7'}`}>
+            <div className={`relative z-10 lg:col-span-6 lg:pointer-events-auto ${isRtl ? '' : 'lg:col-start-7'}`}>
               <HeroContent
                 lang={lang}
                 tag={tag}
@@ -122,20 +122,29 @@ export const Hero: React.FC<HeroProps> = ({
                 ctaSecondary={ctaSecondary}
                 ctaContact={ctaContact}
                 stats={stats}
+                showStats={isDesktop}
               />
             </div>
 
-            {/* Mobile: shorter scrub track so the drawing does not trap ~2 extra screens. */}
+            {/* Mobile: a full-screen stage pinned for one extra screen of scrolling while the car
+                disassembles, with the key figures docked underneath the drawing. Pulled up under the
+                text (whose column sits above it) so the assembled car already shows on the first screen. */}
             {!isDesktop && (
-              <div ref={mobileTrackRef} className="relative h-[130vh]">
-                <div className="sticky top-24 -mx-4 sm:-mx-6">
-                  <PorscheShowcase
-                    variant="inline"
-                    refreshKey={lang}
-                    triggerRef={mobileTrackRef}
-                    start="top 96px"
-                    end="bottom bottom"
-                  />
+              <div ref={mobileTrackRef} className="relative h-[200svh] -mt-72 sm:-mt-40">
+                <div className="sticky top-0 h-svh flex flex-col pt-20 pb-4">
+                  <div className="relative flex-1 min-h-0 -mx-4 sm:-mx-6">
+                    <PorscheShowcase
+                      variant="inline"
+                      refreshKey={lang}
+                      triggerRef={mobileTrackRef}
+                      start="top top"
+                      end="bottom bottom"
+                    />
+                    <span className="absolute bottom-2 inset-x-0 mx-auto w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/80 text-[11px] font-medium text-slate-500 pointer-events-none">
+                      {isRtl ? 'برای مشاهده جداسازی قطعات اسکرول کنید' : 'Scroll to explore the disassembly'}
+                    </span>
+                  </div>
+                  <HeroStatsCompact stats={stats} />
                 </div>
               </div>
             )}

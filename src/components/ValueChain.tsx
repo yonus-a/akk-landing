@@ -34,8 +34,7 @@ const iconMap: Record<string, React.ElementType> = {
   MapPin,
 };
 
-// Scroll-stepping needs the map and inspector side by side; on smaller screens stages change by tap only.
-const STEP_SCROLL_QUERY = '(min-width: 1024px)';
+const DESKTOP_QUERY = '(min-width: 1024px)';
 
 // Serpentine conveyor geometry in SVG user units: rows of 3 stations joined by half-circle turns.
 const VB_W = 600;
@@ -126,11 +125,10 @@ export const ValueChain: React.FC<ValueChainProps> = ({
 }) => {
   const isRtl = lang === 'fa';
   const [activeIndex, setActiveIndex] = useState(0);
-  const stepScrollEnabled = useMediaQuery(STEP_SCROLL_QUERY);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const { sectionRef, pinRef, stickyTop, pinRun, goTo } = useStepScroll<HTMLElement>({
     count: steps.length,
     setActiveIndex,
-    enabled: stepScrollEnabled,
   });
 
   const beltPathRef = useRef<SVGPathElement>(null);
@@ -233,8 +231,8 @@ export const ValueChain: React.FC<ValueChainProps> = ({
     >
       <div
         ref={pinRef}
-        className="relative overflow-hidden py-14 lg:py-10 lg:sticky lg:min-h-screen lg:flex lg:flex-col lg:justify-center"
-        style={stepScrollEnabled ? { top: stickyTop } : undefined}
+        className="sticky min-h-svh flex flex-col justify-center overflow-hidden pt-20 pb-4 sm:pt-24 sm:pb-6 lg:py-10"
+        style={{ top: stickyTop }}
       >
       {/* Blueprint grid + glow */}
       <div
@@ -255,22 +253,22 @@ export const ValueChain: React.FC<ValueChainProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Heading with Tour Controls */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 mb-4 lg:mb-6">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
               <Layers className="w-4 h-4" />
               <span>{kicker}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight mb-2">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight sm:mb-2">
               {title}
             </h2>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="hidden sm:block text-sm text-slate-400 leading-relaxed">
               {subtitle}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 self-start md:self-end">
-            {stepScrollEnabled && (
+          <div className="hidden sm:flex items-center gap-2 shrink-0 self-start md:self-end">
+            {isDesktop && (
               <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/15 bg-white/5 text-xs text-slate-300">
                 <Mouse className="w-3.5 h-3.5 text-blue-400 animate-bounce motion-reduce:animate-none" />
                 <span>
@@ -311,7 +309,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
           {/* Conveyor Map */}
           <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 flex flex-col">
             <div
-              className="relative w-full aspect-[4/5] sm:aspect-[var(--vc-ar)] rounded-xl overflow-hidden px-2 sm:px-3"
+              className="relative w-full aspect-[4/3] sm:aspect-[var(--vc-ar)] rounded-xl overflow-hidden px-2 sm:px-3"
               style={{ '--vc-ar': `${VB_W}/${conveyor.height}` } as React.CSSProperties}
             >
               {/* Faint photo of the active site under the blueprint */}
@@ -448,7 +446,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
             </div>
 
             {/* Site legend — only units linked to value-chain stages */}
-            <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap gap-1.5">
+            <div className="hidden lg:flex mt-3 pt-3 border-t border-white/10 flex-wrap gap-1.5">
               {sites.map((site, idx) => {
                 const firstStage = steps.findIndex((s) => s.siteId === site.id);
                 if (firstStage < 0) return null;
@@ -481,7 +479,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
           >
             <div
               key={activeStep.id}
-              className="relative h-full p-5 flex flex-col gap-4 animate-[vc-in_450ms_ease-out] motion-reduce:animate-none"
+              className="relative h-full p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 animate-[vc-in_450ms_ease-out] motion-reduce:animate-none"
             >
               <span
                 aria-hidden="true"
@@ -505,7 +503,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
                 </div>
               </div>
 
-              <p className="relative text-sm text-slate-400 leading-relaxed">
+              <p className="relative text-sm text-slate-400 leading-relaxed line-clamp-3 sm:line-clamp-none">
                 <span className="font-bold text-slate-100">{activeStep.shortDesc}. </span>
                 {activeStep.fullDesc}
               </p>
@@ -525,9 +523,9 @@ export const ValueChain: React.FC<ValueChainProps> = ({
               </ul>
 
               {/* Operating site */}
-              <div className="rounded-xl bg-white/[0.04] border border-white/10 p-2.5">
+              <div className="hidden lg:block rounded-xl bg-white/[0.04] border border-white/10 p-2.5">
                 <div className="flex gap-3">
-                  <div className="relative w-24 shrink-0 aspect-[4/3] rounded-lg overflow-hidden bg-slate-800" title={activeSite?.imageCaption}>
+                  <div className="relative w-20 sm:w-24 shrink-0 aspect-[4/3] rounded-lg overflow-hidden bg-slate-800" title={activeSite?.imageCaption}>
                     <img
                       src={activeSite?.imageSrc}
                       alt={activeSite?.imageCaption ?? ''}
@@ -568,10 +566,10 @@ export const ValueChain: React.FC<ValueChainProps> = ({
                     </div>
                   </div>
                 </div>
-                <dl className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
+                <dl className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
                   {activeSite?.specs.map((spec, sIdx) => (
                     <div key={sIdx} className="min-w-0 flex items-baseline justify-between gap-2 text-[10px] border-b border-white/5 py-0.5">
-                      <dt className="text-slate-500 truncate">{spec.label}</dt>
+                      <dt className="text-slate-500 shrink-0 sm:shrink sm:truncate">{spec.label}</dt>
                       <dd className="text-slate-200 font-bold text-end truncate" title={spec.value}>{spec.value}</dd>
                     </div>
                   ))}
@@ -580,7 +578,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
 
               {/* Tags + Up Next */}
               <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-1">
+                <div className="hidden sm:flex flex-wrap gap-1">
                   {activeStep.tags.map((tag, tIdx) => (
                     <span key={tIdx} className="px-1.5 py-0.5 rounded bg-white/5 text-slate-400 text-[10px] font-medium">
                       #{tag}

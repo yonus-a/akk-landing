@@ -49,10 +49,16 @@ export function useStepScroll<S extends HTMLElement = HTMLElement, P extends HTM
     const pin = pinRef.current;
     if (!pin || !enabled) return;
 
+    // Mobile browser toolbars change innerHeight while scrolling; resizing the runway then would make the
+    // page jump, so the step size is only recomputed when the width changes.
+    let measuredWidth = -1;
     const measure = () => {
       const vh = window.innerHeight;
       setStickyTop(Math.min(0, vh - pin.offsetHeight));
-      setStepPx(Math.round(vh * stepViewportRatio));
+      if (window.innerWidth !== measuredWidth) {
+        measuredWidth = window.innerWidth;
+        setStepPx(Math.round(vh * stepViewportRatio));
+      }
     };
     measure();
 

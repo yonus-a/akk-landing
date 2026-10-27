@@ -23,6 +23,8 @@ interface HeroContentProps {
   ctaSecondary: string;
   ctaContact: string;
   stats: { value: string; label: string }[];
+  /** When false the stat cards are left out (mobile renders them under the 3D stage instead). */
+  showStats?: boolean;
 }
 
 // Matches the fixed order of `hero.stats` in content.ts: founded, sites, plant area, logistics area.
@@ -120,6 +122,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   ctaSecondary,
   ctaContact,
   stats,
+  showStats = true,
 }) => {
   const isRtl = lang === 'fa';
   const ForwardArrow = isRtl ? ArrowLeft : ArrowRight;
@@ -184,7 +187,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
           variants={titleContainer}
           aria-label={title}
           style={{ perspective: 900 }}
-          className="mt-6 flex flex-wrap gap-x-[0.28em] gap-y-1.5 text-2xl sm:text-4xl xl:text-[3.35rem] font-bold tracking-tight text-slate-900 leading-[1.2] rtl:leading-[1.4]"
+          className="mt-5 sm:mt-6 flex flex-wrap gap-x-[0.28em] gap-y-1.5 text-[1.75rem] sm:text-4xl xl:text-[3.35rem] font-bold tracking-tight text-slate-900 leading-[1.2] rtl:leading-[1.4]"
         >
           {titleWords.map((word, idx) => {
             const isHighlight = idx === titleWords.length - 1 && titleWords.length > 1;
@@ -236,7 +239,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         {/* Actions */}
         <motion.div
           variants={fadeUpBlur}
-          className="mt-8 flex flex-wrap items-stretch sm:items-center gap-3 sm:gap-3.5"
+          className="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-3.5"
         >
           {/* Primary CTA */}
           <motion.a
@@ -244,7 +247,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 min-h-12 py-2.5 ps-5 pe-1.5 sm:ps-6 rounded-full text-sm font-semibold text-center text-white bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 bg-[length:200%_auto] hover:bg-right shadow-lg shadow-blue-700/25 hover:shadow-xl hover:shadow-blue-700/35 transition-all duration-500 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
+            className="col-span-2 group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 min-h-12 py-2.5 ps-5 pe-1.5 sm:ps-6 rounded-full text-sm font-semibold text-center text-white bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 bg-[length:200%_auto] hover:bg-right shadow-lg shadow-blue-700/25 hover:shadow-xl hover:shadow-blue-700/35 transition-all duration-500 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
           >
             <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
@@ -279,7 +282,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
           {/* Tertiary Contact Link */}
           <a
             href="#contact"
-            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-1.5 min-h-12 px-3.5 rounded-full text-sm font-medium text-slate-600 hover:text-blue-700 transition-colors"
+            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-1.5 min-h-12 px-3.5 rounded-full text-sm font-medium text-slate-600 hover:text-blue-700 border border-slate-200/90 bg-white/60 sm:border-transparent sm:bg-transparent transition-colors"
           >
             <span className="relative">
               {ctaContact}
@@ -297,6 +300,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         </motion.div>
 
         {/* Creative Architectural Bento Stats Cards (Hover-Only, No Scroll/Numbering) */}
+        {showStats && (
         <motion.dl
           variants={statsContainer}
           onMouseLeave={() => setHoveredIdx(null)}
@@ -428,6 +432,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             );
           })}
         </motion.dl>
+        )}
 
         {/* Modern Scroll Hint */}
         <motion.div
@@ -464,3 +469,30 @@ export const HeroContent: React.FC<HeroContentProps> = ({
     </MotionConfig>
   );
 };
+
+/** Dense stat strip shown under the mobile 3D stage, where vertical space is shared with the drawing. */
+export const HeroStatsCompact: React.FC<{ stats: { value: string; label: string }[] }> = ({ stats }) => (
+  <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+    {stats.map((stat, idx) => {
+      const Icon = STAT_ICONS[idx];
+      return (
+        <div
+          key={idx}
+          className="flex items-center gap-2.5 min-w-0 p-2.5 sm:p-3 rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 shadow-sm shadow-slate-900/[0.03]"
+        >
+          {Icon && (
+            <span className="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-blue-50/90 text-blue-700 border border-blue-100/80">
+              <Icon className="w-4 h-4" strokeWidth={2} />
+            </span>
+          )}
+          <div className="min-w-0 flex flex-col-reverse">
+            <dt className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-snug truncate">{stat.label}</dt>
+            <dd className="text-base sm:text-lg font-extrabold tabular-nums tracking-tight leading-tight text-slate-900">
+              {stat.value}
+            </dd>
+          </div>
+        </div>
+      );
+    })}
+  </dl>
+);

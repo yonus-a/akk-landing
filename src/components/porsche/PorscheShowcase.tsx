@@ -13,7 +13,8 @@ const BACKDROP_MASK = [
 
 const VARIANTS = {
   inline: {
-    className: 'relative aspect-[4/3]',
+    // Fills its (sized) parent stage.
+    className: 'absolute inset-0',
     mask: { maskImage: INLINE_MASK, WebkitMaskImage: INLINE_MASK },
     zoom: 1.38,
     centerX: 0.5,

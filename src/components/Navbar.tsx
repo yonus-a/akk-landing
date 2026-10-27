@@ -93,8 +93,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (!mobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileMenuOpen(false);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // Lock page scroll while the drawer is open so taps/swipes stay inside it.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [mobileMenuOpen]);
+
+  // Close the drawer if the viewport grows into the desktop layout.
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => mql.matches && setMobileMenuOpen(false);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4">
@@ -220,48 +234,60 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile drawer */}
       {mobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="lg:hidden max-w-7xl mx-auto mt-2 p-3 rounded-[2rem] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-2xl shadow-slate-900/10"
-        >
-          <nav className="grid grid-cols-2 gap-2" aria-label="Mobile Navigation">
-            {navItems.map((item) => {
-              const Icon = NAV_ICONS[item.id];
-              const isActive = activeId === item.id;
-              return (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-2.5 p-2 pe-4 rounded-full text-sm font-medium transition-colors ${
-                    isActive ? 'bg-blue-50 text-blue-800' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {Icon && (
-                    <span
-                      className={`grid place-items-center w-9 h-9 rounded-full shrink-0 ${
-                        isActive ? 'bg-blue-700 text-white' : 'bg-white text-blue-700 border border-slate-200/70'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" strokeWidth={1.75} />
-                    </span>
-                  )}
-                  <span className="truncate">{item.label}</span>
-                </a>
-              );
-            })}
-          </nav>
-          <a
-            href="#contact"
+        <>
+          {/* Backdrop: closes the drawer on tap and dims the page behind it */}
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.18 }}
             onClick={() => setMobileMenuOpen(false)}
-            className="mt-3 flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 shadow-lg shadow-blue-700/20 transition-colors"
+            className="lg:hidden fixed inset-0 -z-10 bg-slate-900/30 backdrop-blur-[2px] cursor-default"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="lg:hidden max-w-7xl mx-auto mt-2 p-3 rounded-[2rem] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 max-h-[calc(100dvh-6.5rem)] overflow-y-auto overscroll-contain"
           >
-            <PhoneCall className="w-4 h-4" strokeWidth={1.75} />
-            <span>{ctaText}</span>
-          </a>
-        </motion.div>
+            <nav className="grid grid-cols-1 sm:grid-cols-2 gap-2" aria-label="Mobile Navigation">
+              {navItems.map((item) => {
+                const Icon = NAV_ICONS[item.id];
+                const isActive = activeId === item.id;
+                return (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-2.5 min-h-12 p-1.5 pe-4 rounded-full text-sm font-medium transition-colors ${
+                      isActive ? 'bg-blue-50 text-blue-800' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {Icon && (
+                      <span
+                        className={`grid place-items-center w-9 h-9 rounded-full shrink-0 ${
+                          isActive ? 'bg-blue-700 text-white' : 'bg-white text-blue-700 border border-slate-200/70'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" strokeWidth={1.75} />
+                      </span>
+                    )}
+                    <span className="min-w-0 leading-snug">{item.label}</span>
+                  </a>
+                );
+              })}
+            </nav>
+            <a
+              href="#contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="mt-3 flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 shadow-lg shadow-blue-700/20 transition-colors"
+            >
+              <PhoneCall className="w-4 h-4" strokeWidth={1.75} />
+              <span>{ctaText}</span>
+            </a>
+          </motion.div>
+        </>
       )}
     </header>
   );

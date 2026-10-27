@@ -15,7 +15,7 @@ import { Language, FactoryGalleryItem } from '../types';
 import { useStepScroll } from '../hooks/useStepScroll';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
-const STEP_SCROLL_QUERY = '(min-width: 1024px)';
+const DESKTOP_QUERY = '(min-width: 1024px)';
 
 interface FactoryGalleryProps {
   lang: Language;
@@ -37,14 +37,10 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
 
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const chipStripRef = useRef<HTMLDivElement | null>(null);
-
-  const stepScrollEnabled = useMediaQuery(STEP_SCROLL_QUERY);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const { sectionRef, pinRef, stickyTop, pinRun, goTo } = useStepScroll<HTMLElement>({
     count: items.length,
     setActiveIndex,
-    enabled: stepScrollEnabled,
     paused: isLightboxOpen,
   });
 
@@ -55,7 +51,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
 
   // Desktop: keep the 2-card window scrolled to the active item
   useEffect(() => {
-    if (!stepScrollEnabled) return;
+    if (!isDesktop) return;
     const container = listContainerRef.current;
     const targetCard = cardRefs.current[activeIndex];
     if (container && targetCard) {
@@ -64,14 +60,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
         behavior: 'smooth',
       });
     }
-  }, [activeIndex, stepScrollEnabled]);
-
-  // Mobile: keep the active chip visible in the horizontal strip
-  useEffect(() => {
-    if (stepScrollEnabled) return;
-    const chip = chipRefs.current[activeIndex];
-    chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [activeIndex, stepScrollEnabled]);
+  }, [activeIndex, isDesktop]);
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -93,10 +82,8 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
     >
       <div
         ref={pinRef}
-        style={stepScrollEnabled ? { top: stickyTop } : undefined}
-        className={`flex flex-col justify-center overflow-hidden py-14 lg:py-20 ${
-          stepScrollEnabled ? 'sticky min-h-screen' : 'relative'
-        }`}
+        style={{ top: stickyTop }}
+        className="sticky min-h-svh flex flex-col justify-center overflow-hidden pt-20 pb-4 sm:pt-24 sm:pb-6 lg:py-20"
       >
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -118,12 +105,11 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
             </div>
 
             {/* Step controls — desktop step-scroll hint; mobile tap counters */}
-            <div className="flex items-center gap-3 self-start md:self-end bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800 backdrop-blur-md">
-              <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 pe-2.5 border-e border-slate-800">
+            <div className="flex items-center gap-3 self-start md:self-end shrink-0 bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800 backdrop-blur-md">
+              <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 pe-2.5 border-e border-slate-800 whitespace-nowrap">
                 <Mouse className="w-3.5 h-3.5 text-blue-400 animate-bounce" />
-                <span>{isRTL ? 'اسکرول گام‌به‌گام' : 'Step Scroll'}</span>
               </div>
-              <span className="text-xs font-mono font-bold text-blue-400 px-1 tabular-nums">
+              <span className="text-xs font-mono font-bold text-blue-400 px-1 tabular-nums whitespace-nowrap">
                 {String(activeIndex + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
               </span>
               <div className="flex items-center gap-1">
@@ -134,7 +120,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                   className="min-h-11 min-w-11 grid place-items-center rounded-xl bg-slate-800 text-slate-200 hover:bg-blue-600 hover:text-white border border-slate-700 disabled:opacity-35 transition-all"
                   aria-label="Previous unit"
                 >
-                  {stepScrollEnabled ? <ChevronUp className="w-4 h-4" /> : <PrevIcon className="w-4 h-4" />}
+                  {isDesktop ? <ChevronUp className="w-4 h-4" /> : <PrevIcon className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"
@@ -143,7 +129,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                   className="min-h-11 min-w-11 grid place-items-center rounded-xl bg-slate-800 text-slate-200 hover:bg-blue-600 hover:text-white border border-slate-700 disabled:opacity-35 transition-all"
                   aria-label="Next unit"
                 >
-                  {stepScrollEnabled ? <ChevronDown className="w-4 h-4" /> : <NextIcon className="w-4 h-4" />}
+                  {isDesktop ? <ChevronDown className="w-4 h-4" /> : <NextIcon className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -238,62 +224,6 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                     </span>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Mobile: horizontal snap chips */}
-            <div className="lg:hidden -mx-4 sm:-mx-6">
-              <div className="px-4 sm:px-6 mb-2 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
-                <span>{isRTL ? 'انتخاب واحد' : 'Select Unit'}</span>
-                <span className="text-[11px] font-mono text-blue-400 tabular-nums">
-                  {activeIndex + 1} / {items.length}
-                </span>
-              </div>
-              <div
-                ref={chipStripRef}
-                className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory scrollbar-none px-4 sm:px-6 pb-1"
-              >
-                {items.map((item, index) => {
-                  const isSelected = index === activeIndex;
-                  return (
-                    <button
-                      key={item.id}
-                      ref={(el) => {
-                        chipRefs.current[index] = el;
-                      }}
-                      type="button"
-                      onClick={() => goTo(index)}
-                      className={`snap-center shrink-0 w-[min(78vw,280px)] text-start p-3.5 rounded-2xl border transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                        isSelected
-                          ? 'bg-slate-900/95 border-blue-500 shadow-lg shadow-blue-950/40 ring-1 ring-blue-500/40'
-                          : 'bg-slate-900/50 border-slate-800 opacity-80'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-700 bg-slate-950 relative">
-                          <img
-                            src={item.imageSrc}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                          <span className="absolute bottom-0.5 start-0.5 bg-blue-600/90 text-white text-[10px] font-mono font-bold px-1 py-0.5 rounded">
-                            {String(index + 1).padStart(2, '0')}
-                          </span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[11px] font-bold text-blue-400 truncate flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 shrink-0" />
-                            {item.category}
-                          </span>
-                          <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mt-0.5">
-                            {item.title}
-                          </h4>
-                          <p className="text-[11px] text-slate-400 line-clamp-1 mt-1">{item.subtitle}</p>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
               </div>
             </div>
 
@@ -408,7 +338,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
         </div>
       </div>
 
-      {stepScrollEnabled && pinRun > 0 && (
+      {pinRun > 0 && (
         <div aria-hidden="true" style={{ height: pinRun }} />
       )}
 

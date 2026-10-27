@@ -85,9 +85,9 @@ const ProductCard: React.FC<{ prod: ProductShowcaseItem; lang: Language }> = ({ 
         ))}
 
         {/* Vehicle chip */}
-        <span className="absolute top-3.5 end-6 inline-flex items-center gap-1 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
-          <Car className="w-3 h-3" />
-          {prod.carModel}
+        <span className="absolute top-3.5 end-6 inline-flex items-center gap-1 max-w-[calc(100%-3rem)] bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
+          <Car className="w-3 h-3 shrink-0" />
+          <span className="truncate">{prod.carModel}</span>
         </span>
 
         {/* Floor shadow that shrinks as the part lifts */}
@@ -136,12 +136,12 @@ const ProductCard: React.FC<{ prod: ProductShowcaseItem; lang: Language }> = ({ 
       </div>
 
       {/* Part label */}
-      <div className="p-4 pt-5">
+      <div className="p-3 pt-4 sm:p-4 sm:pt-5">
         <div className="pe-0 sm:pe-20">
-          <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block mb-1">
+          <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block mb-1 line-clamp-1">
             {prod.category}
           </span>
-          <h3 className="text-[15px] font-bold text-slate-900 leading-snug text-pretty group-hover:text-blue-700 transition-colors">
+          <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug text-pretty group-hover:text-blue-700 transition-colors">
             {prod.name}
           </h3>
         </div>
@@ -151,7 +151,7 @@ const ProductCard: React.FC<{ prod: ProductShowcaseItem; lang: Language }> = ({ 
               aria-hidden="true"
               viewBox={`0 0 ${barcode.width} 20`}
               preserveAspectRatio="none"
-              className="h-6 w-28 text-slate-800 group-hover:text-blue-800 transition-colors"
+              className="h-5 sm:h-6 w-24 max-w-full sm:w-28 text-slate-800 group-hover:text-blue-800 transition-colors"
             >
               {barcode.bars.map((bar, i) => (
                 <rect key={i} x={bar.x} y="0" width={bar.w} height="20" fill="currentColor" />
@@ -192,7 +192,7 @@ export const ProductShowcase: React.FC<ProductShowcaseProps> = ({
         </div>
 
         {/* Featured Products as part tags */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {items.map((prod) => (
             <ProductCard key={prod.id} prod={prod} lang={lang} />
           ))}
