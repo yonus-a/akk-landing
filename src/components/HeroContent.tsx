@@ -460,8 +460,8 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             </span>
             <span className="tracking-wide">
               {isRtl
-                ? 'برای مشاهده جداسازی قطعات اسکرول کنید'
-                : 'Scroll to explore the disassembly'}
+                ? 'برای ورود به کارخانه اسکرول کنید'
+                : 'Scroll to tour the factory'}
             </span>
           </div>
         </motion.div>

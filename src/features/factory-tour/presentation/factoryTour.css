@@ -1,0 +1,52 @@
+/* Embeddable tour: every layer is positioned inside the .factory-tour container, which the host sizes.
+   Layered so host utility classes (e.g. Tailwind's `absolute`) can override the defaults. */
+@layer components {
+.factory-tour { --ft-top: 20px; position: relative; overflow: hidden; font-family: 'Vazirmatn', Tahoma, sans-serif; color: #f8fafc; }
+.factory-tour *, .factory-tour *::before, .factory-tour *::after { box-sizing: border-box; }
+
+.ft-canvas-host { position: absolute; inset: 0; z-index: 1; }
+.ft-canvas-host::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 55%, rgba(10,14,22,0.38) 100%); }
+.ft-canvas { display: block; width: 100%; height: 100%; }
+.ft-protractor { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 15; pointer-events: none; transition: opacity 0.35s ease; }
+.ft-sky-haze { position: absolute; top: 0; inset-inline: 0; height: 18%; background: linear-gradient(180deg, rgba(255,249,235,0.48) 0%, rgba(255,249,235,0) 100%); z-index: 10; pointer-events: none; transition: opacity 0.4s ease; }
+.ft-progress { position: absolute; top: 0; inset-inline-start: 0; height: 4px; width: 0%; background: linear-gradient(90deg, #00e1ff, #0055ff); z-index: 100; box-shadow: 0 0 12px #00e1ff; }
+
+.ft-hud { position: absolute; inset: 0; z-index: 50; pointer-events: none; transition: opacity 0.4s ease; }
+.ft-hud > * { pointer-events: auto; }
+.ft-hud.is-hidden > * { pointer-events: none; }
+
+.ft-nav { position: absolute; top: var(--ft-top); left: 50%; transform: translateX(-50%); z-index: 60; display: flex; gap: 8px; background: rgba(8,20,42,0.84); backdrop-filter: blur(12px); padding: 8px 14px; border-radius: 40px; border: 1px solid rgba(0,153,255,0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+.ft-btn { background: transparent; color: #a8c7fa; border: none; padding: 7px 14px; border-radius: 24px; cursor: pointer; font: inherit; font-size: 0.84rem; font-weight: 500; transition: all 0.25s ease; white-space: nowrap; }
+.ft-btn:hover { color: #fff; background: rgba(0,136,255,0.2); }
+.ft-btn.is-active { background: #0077ff; color: #fff; box-shadow: 0 0 14px rgba(0,119,255,0.7); }
+.ft-btn.ft-protractor-toggle { border: 1px solid rgba(56,189,248,0.45); color: #38bdf8; }
+.ft-btn.ft-protractor-toggle.is-on { background: rgba(14,165,233,0.25); color: #fff; }
+
+.ft-info-card { position: absolute; bottom: 30px; inset-inline-start: 34px; width: 460px; max-width: calc(100% - 34px); background: rgba(7,18,38,0.86); backdrop-filter: blur(14px); border: 1px solid rgba(0,162,255,0.35); border-inline-start: 5px solid #0099ff; border-radius: 16px; padding: 20px 24px; z-index: 50; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+.ft-step-tag { display: inline-block; font-size: 0.75rem; color: #4dc3ff; background: rgba(0,140,255,0.2); padding: 3px 12px; border-radius: 20px; margin-bottom: 8px; border: 1px solid rgba(77,195,255,0.35); }
+.ft-info-card h2 { margin: 0 0 8px; font-size: 1.28rem; font-weight: 700; color: #fff; }
+.ft-info-card p { margin: 0; font-size: 0.86rem; line-height: 1.75; color: #cbd5e1; }
+.ft-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ft-chip { font-size: 0.7rem; color: #86efac; background: rgba(34,197,94,0.12); border: 1px solid rgba(74,222,128,0.35); padding: 2px 10px; border-radius: 14px; }
+
+.ft-scroll-hint { position: absolute; bottom: 30px; inset-inline-end: 34px; z-index: 50; display: flex; align-items: center; gap: 10px; background: rgba(7,18,38,0.82); padding: 10px 18px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.84rem; color: #93c5fd; transition: opacity 0.3s ease; pointer-events: none; }
+
+.ft-legend { position: absolute; top: calc(var(--ft-top) + 54px); inset-inline-start: 34px; z-index: 55; display: flex; flex-direction: column; gap: 5px; background: rgba(7,18,38,0.78); backdrop-filter: blur(10px); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(0,162,255,0.28); font-size: 0.72rem; color: #cbd5e1; transition: opacity 0.35s ease; }
+.ft-legend-row { display: flex; align-items: center; gap: 7px; }
+.ft-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+
+/* Compact: small inline stages (e.g. the mobile hero) keep only the essentials. */
+.factory-tour.is-compact .ft-nav { top: var(--ft-top); padding: 5px 6px; gap: 3px; flex-wrap: wrap; justify-content: center; width: calc(100% - 16px); }
+.factory-tour.is-compact .ft-btn { padding: 5px 9px; font-size: 0.72rem; }
+.factory-tour.is-compact .ft-info-card { inset-inline: 12px; bottom: 12px; width: auto; max-width: none; padding: 12px 16px; }
+.factory-tour.is-compact .ft-info-card h2 { margin: 0; font-size: 0.95rem; }
+.factory-tour.is-compact .ft-legend,
+.factory-tour.is-compact .ft-scroll-hint { display: none; }
+
+@media (max-width: 768px) {
+  .ft-nav { top: calc(var(--ft-top) - 10px); padding: 6px 8px; gap: 4px; flex-wrap: wrap; justify-content: center; width: 95%; }
+  .ft-btn { padding: 5px 9px; font-size: 0.72rem; }
+  .ft-info-card { inset-inline: 14px; bottom: 14px; width: auto; }
+  .ft-scroll-hint, .ft-legend { display: none; }
+}
+}

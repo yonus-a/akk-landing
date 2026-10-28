@@ -1,6 +1,10 @@
 import React, { useMemo, useRef } from 'react';
 import { Package, ChevronRight, Car } from 'lucide-react';
 import { Language, ProductShowcaseItem } from '../types';
+import { PorscheShowcase } from './porsche/PorscheShowcase';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+
+const DESKTOP_QUERY = '(min-width: 1024px)';
 
 interface ProductShowcaseProps {
   lang: Language;
@@ -166,6 +170,21 @@ const ProductCard: React.FC<{ prod: ProductShowcaseItem; lang: Language }> = ({ 
   );
 };
 
+const SectionHeader: React.FC<{ kicker: string; title: string; subtitle: string }> = ({ kicker, title, subtitle }) => (
+  <div className="max-w-3xl">
+    <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
+      <Package className="w-4 h-4" />
+      <span>{kicker}</span>
+    </div>
+    <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+      {title}
+    </h2>
+    <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+      {subtitle}
+    </p>
+  </div>
+);
+
 export const ProductShowcase: React.FC<ProductShowcaseProps> = ({
   lang,
   kicker,
@@ -173,24 +192,62 @@ export const ProductShowcase: React.FC<ProductShowcaseProps> = ({
   subtitle,
   items,
 }) => {
-  return (
-    <section id="products" className="py-20 lg:py-28 bg-slate-50 relative border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="max-w-3xl mb-14">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
-            <Package className="w-4 h-4" />
-            <span>{kicker}</span>
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-            {title}
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-            {subtitle}
-          </p>
-        </div>
+  const isRtl = lang === 'fa';
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const explodedTrackRef = useRef<HTMLDivElement>(null);
+  const scrollHint = isRtl ? 'برای مشاهده جداسازی قطعات اسکرول کنید' : 'Scroll to explore the disassembly';
 
+  return (
+    <section id="products" className="pt-20 lg:pt-0 pb-20 lg:pb-28 bg-slate-50 relative border-b border-slate-200">
+      {!isDesktop && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
+        </div>
+      )}
+
+      {/* Exploded-view runway: the stage stays pinned while scrolling disassembles the car.
+          Desktop puts the header beside the drawing; mobile pins the drawing alone under the header. */}
+      <div ref={explodedTrackRef} className="relative h-[200svh] lg:h-[300vh] mb-10 lg:mb-14">
+        <div className="sticky top-0 h-svh lg:h-screen overflow-clip flex flex-col pt-20 pb-4 lg:pb-0 lg:justify-center">
+          {isDesktop ? (
+            <>
+              <PorscheShowcase
+                variant="backdrop"
+                refreshKey={lang}
+                triggerRef={explodedTrackRef}
+                start="top top"
+                end="bottom bottom"
+              />
+              <div className="relative max-w-7xl mx-auto px-8 w-full z-10 pointer-events-none">
+                <div className="grid grid-cols-12 gap-12 items-center">
+                  <div className={`col-span-5 pointer-events-auto ${isRtl ? '' : 'col-start-8'}`}>
+                    <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
+                    <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                      {scrollHint}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="relative flex-1 min-h-0">
+              <PorscheShowcase
+                variant="inline"
+                refreshKey={lang}
+                triggerRef={explodedTrackRef}
+                start="top top"
+                end="bottom bottom"
+              />
+              <span className="absolute bottom-2 inset-x-0 mx-auto w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/80 text-[11px] font-medium text-slate-500 pointer-events-none">
+                {scrollHint}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Featured Products as part tags */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {items.map((prod) => (
