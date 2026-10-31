@@ -1,0 +1,144 @@
+# GitLab CI/CD for akk-landing (same layout as akk-exhibition)
+#
+#   Merge request -> install, lint (tsc), production build (nothing is deployed)
+#   main          -> lint, then: build the Docker image on the runner, push it to registry.akk.ir
+#                    tagged with the commit SHA and `latest`, point Dokploy at the SHA tag, deploy,
+#                    and wait until the site answers through Traefik.
+#
+# Manual deploy / rollback: Build > Pipelines > Run pipeline on main. Leave DEPLOY_IMAGE_TAG empty
+# to build and deploy the current main, or set it to an earlier commit SHA to redeploy that image
+# (no build, no checks). Required protected CI/CD variables: DOKPLOY_URL, DOKPLOY_API_KEY,
+# DOKPLOY_APPLICATION_ID. Registry login uses GitLab's built-in job token.
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+stages:
+  - validate
+  - build
+  - deploy
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE
+  DEPLOY_IMAGE_TAG:
+    value: ""
+    description: "Redeploy an existing image: set to a commit SHA already in the registry (rollback). Empty = build and deploy this commit."
+  PNPM_VERSION: "10.34.9"
+  # The site is checked through Traefik on the LAN, independent of DNS/CDN.
+  SITE_HOST: akk.ir
+  TRAEFIK_IP: 192.168.203.203
+
+default:
+  interruptible: true
+
+# --- validate ---------------------------------------------------------------------------------
+
+.node:
+  stage: validate
+  image: node:22-alpine
+  cache:
+    key:
+      files: [pnpm-lock.yaml]
+    paths: [.pnpm-store/]
+  before_script:
+    - corepack enable && corepack prepare "pnpm@$PNPM_VERSION" --activate
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile --prefer-offline
+  rules:
+    - if: $DEPLOY_IMAGE_TAG
+      when: never
+    - when: on_success
+
+lint:
+  extends: .node
+  script:
+    - pnpm run lint
+
+build:verify:
+  extends: .node
+  script:
+    - pnpm run build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# --- build (main only) ------------------------------------------------------------------------
+
+docker:image:
+  stage: build
+  image: docker:29-cli
+  rules:
+    - if: $DEPLOY_IMAGE_TAG
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    # Plain single-platform image: GitLab's registry rejects the extra attestation manifests
+    # (provenance/SBOM) that Docker 29 pushes by default (MANIFEST_BLOB_UNKNOWN).
+    - >
+      docker build --pull --provenance=false --sbom=false
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.source=$CI_PROJECT_URL"
+      --label "org.opencontainers.image.created=$CI_PIPELINE_CREATED_AT"
+      -t "$IMAGE:$CI_COMMIT_SHA" -t "$IMAGE:latest" .
+    - docker push "$IMAGE:$CI_COMMIT_SHA"
+    - docker push "$IMAGE:latest"
+  after_script:
+    - docker image rm "$IMAGE:$CI_COMMIT_SHA" "$IMAGE:latest" >/dev/null 2>&1 || true
+    - docker logout "$CI_REGISTRY" >/dev/null 2>&1 || true
+
+# --- deploy (main only) -----------------------------------------------------------------------
+
+deploy:production:
+  stage: deploy
+  image: alpine:3.22
+  interruptible: false
+  resource_group: production
+  environment:
+    name: production
+    url: https://akk.ir
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "merge_request_event"
+  before_script:
+    - apk add --no-cache curl jq >/dev/null
+  script:
+    - TAG="${DEPLOY_IMAGE_TAG:-$CI_COMMIT_SHA}"
+    - TARGET="$IMAGE:$TAG"
+    - echo "Deploying $TARGET"
+    - |
+      dokploy() {  # dokploy <endpoint> [json-body]
+        if [ -n "$2" ]; then
+          curl -fsS -m 60 -X POST -H "x-api-key: $DOKPLOY_API_KEY" -H "Content-Type: application/json" -d "$2" "$DOKPLOY_URL/api/$1"
+        else
+          curl -fsS -m 60 -H "x-api-key: $DOKPLOY_API_KEY" "$DOKPLOY_URL/api/$1"
+        fi
+      }
+    - dokploy application.update "$(jq -nc --arg id "$DOKPLOY_APPLICATION_ID" --arg img "$TARGET" '{applicationId:$id, dockerImage:$img}')" >/dev/null
+    - |
+      [ "$(dokploy "application.one?applicationId=$DOKPLOY_APPLICATION_ID" | jq -r .dockerImage)" = "$TARGET" ] \
+        || { echo "Dokploy did not accept the new image"; exit 1; }
+    - BEFORE=$(dokploy "deployment.all?applicationId=$DOKPLOY_APPLICATION_ID" | jq -r '[.[].deploymentId] | join(" ")')
+    - dokploy application.deploy "$(jq -nc --arg id "$DOKPLOY_APPLICATION_ID" '{applicationId:$id}')" >/dev/null
+    - |
+      # wait for the new Dokploy deployment record to finish (stop old container, pull, start new one)
+      status=queued
+      for i in $(seq 1 60); do
+        sleep 10
+        new=$(dokploy "deployment.all?applicationId=$DOKPLOY_APPLICATION_ID" \
+          | jq -c --arg before "$BEFORE" '[.[] | select(.deploymentId as $d | ($before | split(" ") | index($d)) | not)] | sort_by(.createdAt) | last // empty')
+        [ -n "$new" ] && status=$(echo "$new" | jq -r .status)
+        echo "Dokploy deployment: $status"
+        [ "$status" = done ] && break
+        [ "$status" = error ] && { echo "Dokploy reported a failed deployment"; exit 1; }
+      done
+      [ "$status" = done ] || { echo "Timed out waiting for Dokploy"; exit 1; }
+    - |
+      # the site must answer over HTTPS through Traefik (valid certificate) with the landing page
+      for i in $(seq 1 36); do
+        code=$(curl -sS -m 10 --resolve "$SITE_HOST:443:$TRAEFIK_IP" -o /tmp/index.html -w '%{http_code}' "https://$SITE_HOST/" 2>/dev/null || true)
+        echo "https://$SITE_HOST/ -> ${code:-no answer}"
+        if [ "$code" = 200 ] && grep -q '<div id="root">' /tmp/index.html; then echo "Deployed $TARGET to https://$SITE_HOST"; exit 0; fi
+        sleep 10
+      done
+      echo "https://$SITE_HOST/ did not answer with the landing page"; exit 1
