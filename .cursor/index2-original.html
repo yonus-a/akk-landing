@@ -1,0 +1,3468 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>بازطراحی داخلی کارخانه AKK | AKK Factory Interior Redesign</title>
+
+  <style>
+
+    @font-face { font-family: Vazirmatn; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+
+    @font-face { font-family: Vazirmatn; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
+    @font-face { font-family: Vazirmatn; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+
+    @font-face { font-family: Vazirmatn; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+
+    body { background: #07101e; color: #f8fafc; overflow-x: hidden; }
+
+    #webgl-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; }
+
+    #protractor-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 15; pointer-events: none; transition: opacity 0.35s ease; }
+
+    .scroll-spacer { position: relative; z-index: 2; height: 850vh; pointer-events: none; }
+
+    .sky-haze { position: fixed; top: 0; left: 0; width: 100vw; height: 18vh; background: linear-gradient(180deg, rgba(255,249,235,0.48) 0%, rgba(255,249,235,0) 100%); z-index: 10; pointer-events: none; transition: opacity 0.4s ease; }
+
+    .progress-bar { position: fixed; top: 0; right: 0; height: 4px; width: 0%; background: linear-gradient(90deg, #00e1ff, #0055ff); z-index: 100; box-shadow: 0 0 12px #00e1ff; }
+
+    .hud-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; gap: 8px; background: rgba(8,20,42,0.84); backdrop-filter: blur(12px); padding: 8px 14px; border-radius: 40px; border: 1px solid rgba(0,153,255,0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+
+    .hud-btn { background: transparent; color: #a8c7fa; border: none; padding: 7px 14px; border-radius: 24px; cursor: pointer; font-size: 0.84rem; font-weight: 500; transition: all 0.25s ease; white-space: nowrap; }
+
+    .hud-btn:hover { color: #fff; background: rgba(0,136,255,0.2); }
+
+    .hud-btn.active { background: #0077ff; color: #fff; box-shadow: 0 0 14px rgba(0,119,255,0.7); }
+
+    .hud-btn.protractor-toggle { border: 1px solid rgba(56,189,248,0.45); color: #38bdf8; }
+
+    .hud-btn.protractor-toggle.on { background: rgba(14,165,233,0.25); color: #fff; }
+
+    .info-card { position: fixed; bottom: 30px; right: 34px; width: 460px; max-width: calc(100vw - 34px); background: rgba(7,18,38,0.86); backdrop-filter: blur(14px); border: 1px solid rgba(0,162,255,0.35); border-right: 5px solid #0099ff; border-radius: 16px; padding: 20px 24px; z-index: 50; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+
+    .step-tag { display: inline-block; font-size: 0.75rem; color: #4dc3ff; background: rgba(0,140,255,0.2); padding: 3px 12px; border-radius: 20px; margin-bottom: 8px; border: 1px solid rgba(77,195,255,0.35); }
+
+    .info-card h2 { font-size: 1.28rem; margin-bottom: 8px; color: #fff; }
+
+    .info-card p { font-size: 0.86rem; line-height: 1.75; color: #cbd5e1; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+    .chip { font-size: 0.7rem; color: #86efac; background: rgba(34,197,94,0.12); border: 1px solid rgba(74,222,128,0.35); padding: 2px 10px; border-radius: 14px; }
+
+    .scroll-indicator { position: fixed; bottom: 30px; left: 34px; z-index: 50; display: flex; align-items: center; gap: 10px; background: rgba(7,18,38,0.82); padding: 10px 18px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.15); font-size: 0.84rem; color: #93c5fd; transition: opacity 0.3s ease; }
+
+    .zone-legend { position: fixed; top: 74px; right: 34px; z-index: 55; display: flex; flex-direction: column; gap: 5px; background: rgba(7,18,38,0.78); backdrop-filter: blur(10px); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(0,162,255,0.28); font-size: 0.72rem; color: #cbd5e1; transition: opacity 0.35s ease; }
+
+    .legend-row { display: flex; align-items: center; gap: 7px; }
+
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+
+    @media (max-width: 768px) {
+
+      .hud-nav { top: 10px; padding: 6px 8px; gap: 4px; flex-wrap: wrap; justify-content: center; width: 95vw; }
+
+      .hud-btn { padding: 5px 9px; font-size: 0.72rem; }
+
+      .info-card { right: 14px; left: 14px; bottom: 14px; width: auto; }
+
+      .scroll-indicator { display: none; }
+
+      .zone-legend { display: none; }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <div class="sky-haze" id="skyHaze"></div>
+
+  <svg id="protractor-overlay"></svg>
+
+  <nav class="hud-nav">
+
+    <button class="hud-btn active" data-target="0">۱. نمای هوایی</button>
+
+    <button class="hud-btn" data-target="0.35">۲. تولید</button>
+
+    <button class="hud-btn" data-target="0.68">۳. رنگ</button>
+
+    <button class="hud-btn" data-target="0.98">۴. انبار</button>
+
+    <button class="hud-btn protractor-toggle on" id="toggleProtractor">📐 نقاله زاویه‌ها</button>
+
+  </nav>
+
+  <div class="zone-legend" id="zoneLegend">
+
+    <div class="legend-row"><span class="legend-dot" style="background:#3b82f6"></span> تولید (تزریق پلاستیک)</div>
+
+    <div class="legend-row"><span class="legend-dot" style="background:#f97316"></span> فروشگاه رنگ (ایزوله)</div>
+
+    <div class="legend-row"><span class="legend-dot" style="background:#14b8a6"></span> انبار پالتی</div>
+
+    <div class="legend-row"><span class="legend-dot" style="background:#22c55e"></span> واک‌وی عابر پیاده</div>
+
+  </div>
+
+  <div class="info-card" id="infoCard">
+
+    <span class="step-tag" id="stepTag">بخش اول • بازطراحی داخلی</span>
+
+    <h2 id="stepTitle">کارخانه AKK — طرح بازطراحی داخلی</h2>
+
+    <p id="stepDesc">در حال بارگذاری صحنه سه‌بعدی…</p>
+
+    <div class="chips" id="stepChips"></div>
+
+  </div>
+
+  <div class="scroll-indicator" id="scrollHint">
+
+    <span>اسکرول کنید تا وارد جریان تولید شوید ⬇</span>
+
+  </div>
+
+  <canvas id="webgl-canvas"></canvas>
+
+  <div class="scroll-spacer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <script>
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    function boot() {
+
+    // =========================================================
+
+    // ۱. تنظیمات صحنه
+
+    // =========================================================
+
+    const canvas = document.getElementById('webgl-canvas');
+
+    const scene = new THREE.Scene();
+
+    scene.background = new THREE.Color(0xcbd5e1);
+
+    scene.fog = new THREE.FogExp2(0xd2cbc0, 0.0022);
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.5, 950);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    renderer.shadowMap.enabled = true;
+
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+    renderer.toneMappingExposure = 1.12;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.82);
+
+    scene.add(ambientLight);
+
+    const hemiLight = new THREE.HemisphereLight(0xdfeaff, 0x8b8f96, 0.55);
+
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfff7e8, 1.2);
+
+    sunLight.position.set(85, 130, 65);
+
+    sunLight.castShadow = true;
+
+    sunLight.shadow.mapSize.set(2048, 2048);
+
+    const d = 220;
+
+    sunLight.shadow.camera.left = -d;
+
+    sunLight.shadow.camera.right = d;
+
+    sunLight.shadow.camera.top = d;
+
+    sunLight.shadow.camera.bottom = -d;
+
+    sunLight.shadow.camera.near = 10;
+
+    sunLight.shadow.camera.far = 480;
+
+    scene.add(sunLight);
+
+    // =========================================================
+
+    // ۲. سیستم مختصات نقاله
+
+    // =========================================================
+
+    const PROTRACTOR_ORIGIN = new THREE.Vector3(8, 0, 62);
+
+    const PERSPECTIVE_Z_SCALE = 1.55;
+
+    function getProtractorDir(deg) {
+
+      const rad = (deg * Math.PI) / 180;
+
+      const dx = -Math.cos(rad);
+
+      const dz = -Math.sin(rad) * PERSPECTIVE_Z_SCALE;
+
+      const len = Math.hypot(dx, dz);
+
+      return { ux: dx / len, uz: dz / len, rotY: Math.atan2(-dx, -dz) };
+
+    }
+
+    function getProtractorPoint(deg, dist, lateral = 0) {
+
+      const dir = getProtractorDir(deg);
+
+      const nx = -dir.uz;
+
+      const nz = dir.ux;
+
+      return new THREE.Vector3(
+
+        PROTRACTOR_ORIGIN.x + dir.ux * dist + nx * lateral,
+
+        0,
+
+        PROTRACTOR_ORIGIN.z + dir.uz * dist + nz * lateral
+
+      );
+
+    }
+
+    // =========================================================
+
+    // ۳. تکسچرها
+
+    // =========================================================
+
+    function createCorrugatedTex(baseHex, stripeHex, rx = 24, ry = 18) {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 256;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = baseHex;
+
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 256; i += 7) {
+
+        ctx.fillStyle = stripeHex;
+
+        ctx.fillRect(i, 0, 2.8, 256);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+
+        ctx.fillRect(i + 2.8, 0, 1.2, 256);
+
+      }
+
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+
+      for (let y = 0; y < 256; y += 32) ctx.fillRect(0, y, 256, 1.5);
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(rx, ry);
+
+      return tex;
+
+    }
+
+    function createGridWinTex(cols = 5, rows = 3) {
+
+      const c = document.createElement('canvas');
+
+      c.width = 320; c.height = 192;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#0a1525';
+
+      ctx.fillRect(0, 0, 320, 192);
+
+      ctx.strokeStyle = '#60a5fa';
+
+      ctx.lineWidth = 5;
+
+      for (let i = 0; i <= cols; i++) {
+
+        ctx.beginPath(); ctx.moveTo((i / cols) * 320, 0); ctx.lineTo((i / cols) * 320, 192); ctx.stroke();
+
+      }
+
+      for (let j = 0; j <= rows; j++) {
+
+        ctx.beginPath(); ctx.moveTo(0, (j / rows) * 192); ctx.lineTo(320, (j / rows) * 192); ctx.stroke();
+
+      }
+
+      return new THREE.CanvasTexture(c);
+
+    }
+
+    function createRoadTex(repeats = 16) {
+
+      const c = document.createElement('canvas');
+
+      c.width = 128; c.height = 256;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#333840';
+
+      ctx.fillRect(0, 0, 128, 256);
+
+      ctx.fillStyle = '#cbd5e1';
+
+      ctx.fillRect(61, 30, 6, 95);
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(1, repeats);
+
+      return tex;
+
+    }
+
+    function createFieldTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 256;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#183a0e';
+
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let y = 0; y < 256; y += 8) {
+
+        ctx.fillStyle = y % 16 === 0 ? '#244f15' : '#122e09';
+
+        ctx.fillRect(0, y, 256, 4);
+
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(18, 18);
+
+      return tex;
+
+    }
+
+    // --- تکسچرهای جدید بازطراحی ---
+
+    function createEpoxyTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 256;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#b7bec7';
+
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 900; i++) {
+
+        ctx.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.05) + ')';
+
+        ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+
+        ctx.fillStyle = 'rgba(60,70,80,' + (Math.random() * 0.05) + ')';
+
+        ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+
+      }
+
+      ctx.strokeStyle = 'rgba(70,80,92,0.4)';
+
+      ctx.lineWidth = 2;
+
+      ctx.strokeRect(0, 0, 256, 256);
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(6, 48);
+
+      return tex;
+
+    }
+
+    function createGratingTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 128;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#8e979f';
+
+      ctx.fillRect(0, 0, 128, 128);
+
+      for (let x = 0; x < 128; x += 10) {
+
+        ctx.fillStyle = '#c8d0d8';
+
+        ctx.fillRect(x, 0, 5, 128);
+
+        ctx.fillStyle = '#5c646c';
+
+        ctx.fillRect(x + 5, 0, 2, 128);
+
+      }
+
+      for (let y = 0; y < 128; y += 26) {
+
+        ctx.fillStyle = '#aeb6be';
+
+        ctx.fillRect(0, y, 128, 3);
+
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(16, 40);
+
+      return tex;
+
+    }
+
+    function createFenceTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 128;
+
+      const ctx = c.getContext('2d');
+
+      ctx.clearRect(0, 0, 128, 128);
+
+      ctx.strokeStyle = 'rgba(250, 204, 21, 0.95)';
+
+      ctx.lineWidth = 3;
+
+      for (let i = 0; i <= 128; i += 16) {
+
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 128); ctx.stroke();
+
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(128, i); ctx.stroke();
+
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(3, 1);
+
+      return tex;
+
+    }
+
+    function createHazardTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 128;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#facc15';
+
+      ctx.fillRect(0, 0, 128, 128);
+
+      ctx.fillStyle = '#111827';
+
+      for (let i = -128; i < 256; i += 32) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(i, 0); ctx.lineTo(i + 16, 0); ctx.lineTo(i + 16 + 128, 128); ctx.lineTo(i + 128, 128);
+
+        ctx.closePath(); ctx.fill();
+
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+      tex.repeat.set(4, 0.5);
+
+      return tex;
+
+    }
+
+    function createSignTex(fa, en, color) {
+
+      const c = document.createElement('canvas');
+
+      c.width = 512; c.height = 128;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#0b1e3a';
+
+      ctx.fillRect(0, 0, 512, 128);
+
+      ctx.strokeStyle = color;
+
+      ctx.lineWidth = 7;
+
+      ctx.strokeRect(7, 7, 498, 114);
+
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#ffffff';
+
+      ctx.font = 'bold 46px Vazirmatn, Tahoma, sans-serif';
+
+      ctx.fillText(fa, 256, 58);
+
+      ctx.font = 'bold 27px Arial, sans-serif';
+
+      ctx.fillStyle = color;
+
+      ctx.fillText(en, 256, 102);
+
+      return new THREE.CanvasTexture(c);
+
+    }
+
+    function createFloorDecalTex(fa, en, color) {
+
+      const c = document.createElement('canvas');
+
+      c.width = 512; c.height = 192;
+
+      const ctx = c.getContext('2d');
+
+      ctx.clearRect(0, 0, 512, 192);
+
+      ctx.strokeStyle = color;
+
+      ctx.lineWidth = 5;
+
+      ctx.strokeRect(10, 10, 492, 172);
+
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = color;
+
+      ctx.font = 'bold 64px Vazirmatn, Tahoma, sans-serif';
+
+      ctx.fillText(fa, 256, 88);
+
+      ctx.font = 'bold 44px Arial, sans-serif';
+
+      ctx.fillText(en, 256, 152);
+
+      return new THREE.CanvasTexture(c);
+
+    }
+
+    function createSafetyBoardTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = 320; c.height = 200;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#14532d';
+
+      ctx.fillRect(0, 0, 320, 200);
+
+      ctx.strokeStyle = '#f8fafc';
+
+      ctx.lineWidth = 4;
+
+      ctx.strokeRect(6, 6, 308, 188);
+
+      ctx.fillStyle = '#ffffff';
+
+      ctx.textAlign = 'center';
+
+      ctx.font = 'bold 26px Vazirmatn, Tahoma, sans-serif';
+
+      ctx.fillText('تابلو ایمنی', 160, 40);
+
+      ctx.font = 'bold 17px Arial, sans-serif';
+
+      ctx.fillText('SAFETY BOARD', 160, 64);
+
+      const rows = ['#f87171', '#fbbf24', '#4ade80', '#60a5fa'];
+
+      for (let i = 0; i < 4; i++) {
+
+        ctx.fillStyle = rows[i];
+
+        ctx.fillRect(28, 82 + i * 26, 264, 14);
+
+      }
+
+      return new THREE.CanvasTexture(c);
+
+    }
+
+    // =========================================================
+
+    // ۴. متریال‌ها
+
+    // =========================================================
+
+    const blueRoofMat = new THREE.MeshStandardMaterial({
+
+      map: createCorrugatedTex('#0050e6', '#003bb3', 26, 18),
+
+      roughness: 0.32, metalness: 0.22, side: THREE.DoubleSide
+
+    });
+
+    const facadeBlueMat = new THREE.MeshStandardMaterial({
+
+      map: createCorrugatedTex('#0044cc', '#003099', 14, 7),
+
+      roughness: 0.42, side: THREE.DoubleSide
+
+    });
+
+    const blueSteelMat = new THREE.MeshStandardMaterial({ color: 0x0055dd, roughness: 0.32, metalness: 0.48 });
+
+    const concreteWallMat = new THREE.MeshStandardMaterial({ color: 0x8b939e, roughness: 0.82 });
+
+    const lightDoorMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.55 });
+
+    const darkOpeningMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.92 });
+
+    const curbMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.7 });
+
+    const gridWinMat = new THREE.MeshBasicMaterial({ map: createGridWinTex(5, 3) });
+
+    const bushMat = new THREE.MeshStandardMaterial({ color: 0x265c19, roughness: 0.85 });
+
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3525 });
+
+    const palletMat = new THREE.MeshStandardMaterial({ color: 0x78553a, roughness: 0.9 });
+
+    const steelColumnMat = new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.35, metalness: 0.55 });
+
+    // --- متریال‌های داخلی بازطراحی ---
+
+    const epoxyFloorMat = new THREE.MeshStandardMaterial({ map: createEpoxyTex(), roughness: 0.55, metalness: 0.05 });
+
+    const gratingMat = new THREE.MeshStandardMaterial({ map: createGratingTex(), roughness: 0.6, metalness: 0.35 });
+
+    const lineYellowMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+
+    const walkGreenMat = new THREE.MeshBasicMaterial({ color: 0x2f9e44, transparent: true, opacity: 0.88 });
+
+    const lineWhiteMat = new THREE.MeshBasicMaterial({ color: 0xf1f5f9 });
+
+    const hazardMat = new THREE.MeshBasicMaterial({ map: createHazardTex() });
+
+    const fenceTex = createFenceTex();
+
+    const fenceMat = new THREE.MeshBasicMaterial({ map: fenceTex, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
+
+    const machineBlueMat = new THREE.MeshStandardMaterial({ color: 0x2f6fd0, roughness: 0.35, metalness: 0.3 });
+
+    const machineDoorMat = new THREE.MeshStandardMaterial({ color: 0x2456a8, roughness: 0.3, metalness: 0.35 });
+
+    const windowGlowMat = new THREE.MeshBasicMaterial({ color: 0xbfe3ff });
+
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0xc0c8d0, roughness: 0.3, metalness: 0.75 });
+
+    const darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x2b3240, roughness: 0.5, metalness: 0.55 });
+
+    const cabinetMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4 });
+
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x0f2233 });
+
+    const rackBlueMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.45, metalness: 0.3 });
+
+    const beamOrangeMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.5, metalness: 0.2 });
+
+    const goodsWhiteMat = new THREE.MeshStandardMaterial({ color: 0xeef2f6, roughness: 0.7 });
+
+    const goodsBeigeMat = new THREE.MeshStandardMaterial({ color: 0xd6c79c, roughness: 0.75 });
+
+    const goodsDarkMat = new THREE.MeshStandardMaterial({ color: 0x232830, roughness: 0.45, metalness: 0.25 });
+
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xa5f3fc, transparent: true, opacity: 0.24, roughness: 0.08, metalness: 0.05, side: THREE.DoubleSide });
+
+    const tileWhiteMat = new THREE.MeshStandardMaterial({ color: 0xe8ecef, roughness: 0.35 });
+
+    const ledDiscMat = new THREE.MeshBasicMaterial({ color: 0xfff8e6 });
+
+    const bollardMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.5 });
+
+    const extingMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.4 });
+
+    const hoodMat = new THREE.MeshStandardMaterial({ color: 0xd7dde3, roughness: 0.45, metalness: 0.5, side: THREE.DoubleSide });
+
+    const flashGlowMat = new THREE.MeshBasicMaterial({ color: 0xffb35c });
+
+    const skylightMat = new THREE.MeshBasicMaterial({ color: 0xeaf4ff });
+
+    function createGabledRoof(width, length, roofHeight, mat = blueRoofMat) {
+
+      const shape = new THREE.Shape();
+
+      shape.moveTo(-width / 2, 0);
+
+      shape.lineTo(0, roofHeight);
+
+      shape.lineTo(width / 2, 0);
+
+      shape.closePath();
+
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false });
+
+      const mesh = new THREE.Mesh(geo, mat);
+
+      mesh.castShadow = true;
+
+      mesh.receiveShadow = true;
+
+      return mesh;
+
+    }
+
+    function createTreeMesh(scale = 1.0) {
+
+      const t = new THREE.Group();
+
+      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.26 * scale, 1.3 * scale), trunkMat);
+
+      tr.position.y = 0.65 * scale;
+
+      const cr = new THREE.Mesh(new THREE.SphereGeometry(1.4 * scale, 9, 9), bushMat);
+
+      cr.scale.y = 0.88;
+
+      cr.position.y = 1.9 * scale;
+
+      cr.castShadow = true;
+
+      t.add(tr, cr);
+
+      return t;
+
+    }
+
+    function createBumperMesh(colorHex = 0x181c20) {
+
+      const g = new THREE.Group();
+
+      const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25, metalness: 0.4 });
+
+      const center = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.45, 0.5), mat);
+
+      const wL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.45, 0.9), mat);
+
+      wL.position.set(-1.1, 0, 0.35); wL.rotation.y = 0.25;
+
+      const wR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.45, 0.9), mat);
+
+      wR.position.set(1.1, 0, 0.35); wR.rotation.y = -0.25;
+
+      g.add(center, wL, wR);
+
+      return g;
+
+    }
+
+    function createWorkerMesh(suit = 0x1e2a3a, hood = false) {
+
+      const g = new THREE.Group();
+
+      const suitMat = new THREE.MeshStandardMaterial({ color: suit, roughness: 0.7 });
+
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9a679, roughness: 0.65 });
+
+      const legs = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.8, 0.24), suitMat);
+
+      legs.position.y = 0.4;
+
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.62, 0.28), suitMat);
+
+      torso.position.y = 1.11;
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 10), skinMat);
+
+      head.position.y = 1.56;
+
+      const armL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.14), suitMat);
+
+      armL.position.set(-0.3, 1.08, 0.05); armL.rotation.z = 0.18;
+
+      const armR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.14), suitMat);
+
+      armR.position.set(0.3, 1.08, 0.05); armR.rotation.z = -0.18;
+
+      g.add(legs, torso, head, armL, armR);
+
+      if (hood) {
+
+        const hoodMatW = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.5 });
+
+        const hd = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10), hoodMatW);
+
+        hd.position.y = 1.58;
+
+        const mask = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.08), new THREE.MeshStandardMaterial({ color: 0x93c5fd }));
+
+        mask.position.set(0, 1.5, 0.13);
+
+        g.add(hd, mask);
+
+      } else {
+
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.07, 10), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+
+        cap.position.y = 1.66;
+
+        g.add(cap);
+
+      }
+
+      return g;
+
+    }
+
+    // =========================================================
+
+    // ۵. زمین و خیابان‌ها
+
+    // =========================================================
+
+    const exteriorGroup = new THREE.Group();
+
+    scene.add(exteriorGroup);
+
+    const groundPlane = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(950, 950),
+
+      new THREE.MeshStandardMaterial({ color: 0x767b70, roughness: 0.95 })
+
+    );
+
+    groundPlane.rotation.x = -Math.PI / 2;
+
+    groundPlane.position.y = -0.18;
+
+    groundPlane.receiveShadow = true;
+
+    exteriorGroup.add(groundPlane);
+
+    const yardShape = new THREE.Shape();
+
+    yardShape.moveTo(8, -58);
+
+    yardShape.lineTo(-105, 35);
+
+    yardShape.lineTo(-20, 145);
+
+    yardShape.lineTo(105, 10);
+
+    yardShape.closePath();
+
+    const courtyardAsphalt = new THREE.Mesh(
+
+      new THREE.ShapeGeometry(yardShape),
+
+      new THREE.MeshStandardMaterial({ color: 0x585e68, roughness: 0.85 })
+
+    );
+
+    courtyardAsphalt.rotation.x = -Math.PI / 2;
+
+    courtyardAsphalt.position.y = -0.04;
+
+    courtyardAsphalt.receiveShadow = true;
+
+    exteriorGroup.add(courtyardAsphalt);
+
+    // خیابان ۳۰°
+
+    const dir30 = getProtractorDir(30);
+
+    const leftSideGroup = new THREE.Group();
+
+    leftSideGroup.position.copy(PROTRACTOR_ORIGIN);
+
+    leftSideGroup.rotation.y = dir30.rotY;
+
+    exteriorGroup.add(leftSideGroup);
+
+    const street1Mesh = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(14, 210),
+
+      new THREE.MeshStandardMaterial({ map: createRoadTex(17), roughness: 0.82 })
+
+    );
+
+    street1Mesh.rotation.x = -Math.PI / 2;
+
+    street1Mesh.position.set(0, 0.02, -92);
+
+    street1Mesh.receiveShadow = true;
+
+    leftSideGroup.add(street1Mesh);
+
+    const curb1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 185), curbMat);
+
+    curb1.position.set(7.2, 0.12, -95);
+
+    leftSideGroup.add(curb1);
+
+    const greenFieldLeft = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(130, 210),
+
+      new THREE.MeshStandardMaterial({ map: createFieldTex(), roughness: 0.9 })
+
+    );
+
+    greenFieldLeft.rotation.x = -Math.PI / 2;
+
+    greenFieldLeft.position.set(-72, 0.01, -92);
+
+    leftSideGroup.add(greenFieldLeft);
+
+    for (let z = -18; z >= -145; z -= 4.8) {
+
+      const bush = createTreeMesh(0.88);
+
+      bush.position.set(9.5, 0, z);
+
+      leftSideGroup.add(bush);
+
+      if (z <= -36 && z >= -128) {
+
+        const pallet = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.2, 2.3), palletMat);
+
+        pallet.position.set(12.0, 0.6, z);
+
+        leftSideGroup.add(pallet);
+
+      }
+
+    }
+
+    // ساختمان بهم‌پیوسته ۵۰°
+
+    const cbX = 20.8;
+
+    const cbWidth = 14.6;
+
+    const canopyRoof = createGabledRoof(cbWidth + 0.4, 17, 1.7, blueRoofMat);
+
+    canopyRoof.position.set(cbX, 5.4, -41);
+
+    leftSideGroup.add(canopyRoof);
+
+    for (let cx of [cbX - 6.8, cbX, cbX + 6.8]) {
+
+      for (let cz of [-24.5, -30, -35.5, -40.5]) {
+
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.32, 5.4, 0.32), blueSteelMat);
+
+        col.position.set(cx, 2.7, cz);
+
+        col.castShadow = true;
+
+        leftSideGroup.add(col);
+
+      }
+
+    }
+
+    for (let r = 0; r < 3; r++) {
+
+      const rack = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.7, 2.5), blueSteelMat);
+
+      rack.position.set(cbX - 2.2 + (r % 2) * 4.4, 0.85, -27 - r * 4.5);
+
+      leftSideGroup.add(rack);
+
+    }
+
+    const cbFrontBody = new THREE.Mesh(new THREE.BoxGeometry(cbWidth, 5.8, 13), facadeBlueMat);
+
+    cbFrontBody.position.set(cbX, 2.9, -47.5);
+
+    cbFrontBody.castShadow = true;
+
+    const cbFrontRoof = createGabledRoof(cbWidth + 0.6, 13, 1.9, blueRoofMat);
+
+    cbFrontRoof.position.set(cbX, 5.8, -54);
+
+    leftSideGroup.add(cbFrontBody, cbFrontRoof);
+
+    const cbMidBody = new THREE.Mesh(new THREE.BoxGeometry(cbWidth, 7.2, 38), concreteWallMat);
+
+    cbMidBody.position.set(cbX, 3.6, -73);
+
+    cbMidBody.castShadow = true;
+
+    const cbMidFascia = new THREE.Mesh(new THREE.BoxGeometry(cbWidth + 0.1, 1.5, 38), facadeBlueMat);
+
+    cbMidFascia.position.set(cbX, 6.45, -73);
+
+    const cbMidRoof = createGabledRoof(cbWidth + 0.8, 38, 2.3, blueRoofMat);
+
+    cbMidRoof.position.set(cbX, 7.2, -92);
+
+    leftSideGroup.add(cbMidBody, cbMidFascia, cbMidRoof);
+
+    const cbRearBody = new THREE.Mesh(new THREE.BoxGeometry(cbWidth, 6.3, 46), concreteWallMat);
+
+    cbRearBody.position.set(cbX, 3.15, -115);
+
+    cbRearBody.castShadow = true;
+
+    const cbRearRoof = createGabledRoof(cbWidth + 0.6, 46, 2.1, blueRoofMat);
+
+    cbRearRoof.position.set(cbX, 6.3, -138);
+
+    leftSideGroup.add(cbRearBody, cbRearRoof);
+
+    for (let z = -58; z >= -132; z -= 9.5) {
+
+      const sideDoor = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 3.2), lightDoorMat);
+
+      sideDoor.rotation.y = -Math.PI / 2;
+
+      sideDoor.position.set(cbX - cbWidth / 2 - 0.06, 1.8, z);
+
+      leftSideGroup.add(sideDoor);
+
+      const sideWin = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 0.85), darkOpeningMat);
+
+      sideWin.rotation.y = -Math.PI / 2;
+
+      sideWin.position.set(cbX - cbWidth / 2 - 0.06, 4.6, z);
+
+      leftSideGroup.add(sideWin);
+
+    }
+
+    function createAKKLogo() {
+
+      const c = document.createElement('canvas');
+
+      c.width = 512; c.height = 256;
+
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#001eff';
+
+      ctx.strokeStyle = '#3b82f6';
+
+      ctx.lineWidth = 6;
+
+      ctx.beginPath();
+
+      ctx.moveTo(35, 132);
+
+      ctx.quadraticCurveTo(215, 12, 465, 65);
+
+      ctx.lineTo(443, 100);
+
+      ctx.quadraticCurveTo(225, 52, 65, 152);
+
+      ctx.closePath();
+
+      ctx.fill(); ctx.stroke();
+
+      ctx.font = 'italic 900 126px sans-serif';
+
+      ctx.fillText('AKK', 62, 224);
+
+      ctx.strokeText('AKK', 62, 224);
+
+      const plane = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(24, 12),
+
+        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true })
+
+      );
+
+      plane.rotation.x = -Math.PI / 2;
+
+      const pLogo = getProtractorPoint(14, 62, 0);
+
+      plane.position.set(pLogo.x, 0.2, pLogo.z);
+
+      return plane;
+
+    }
+
+    exteriorGroup.add(createAKKLogo());
+
+    // خیابان ۱۶۵°
+
+    const dir165 = getProtractorDir(165);
+
+    const rightSideGroup = new THREE.Group();
+
+    rightSideGroup.position.copy(PROTRACTOR_ORIGIN);
+
+    rightSideGroup.rotation.y = dir165.rotY;
+
+    exteriorGroup.add(rightSideGroup);
+
+    const street2Mesh = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(14, 175),
+
+      new THREE.MeshStandardMaterial({ map: createRoadTex(14), roughness: 0.82 })
+
+    );
+
+    street2Mesh.rotation.x = -Math.PI / 2;
+
+    street2Mesh.position.set(0, 0.03, -75);
+
+    street2Mesh.receiveShadow = true;
+
+    rightSideGroup.add(street2Mesh);
+
+    const curb2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 155), curbMat);
+
+    curb2.position.set(-7.2, 0.12, -80);
+
+    rightSideGroup.add(curb2);
+
+    const greenFieldRight = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(95, 175),
+
+      new THREE.MeshStandardMaterial({ map: createFieldTex(), roughness: 0.9 })
+
+    );
+
+    greenFieldRight.rotation.x = -Math.PI / 2;
+
+    greenFieldRight.position.set(54.5, 0.01, -75);
+
+    rightSideGroup.add(greenFieldRight);
+
+    const guardHouse = new THREE.Group();
+
+    const ghBody = new THREE.Mesh(
+
+      new THREE.BoxGeometry(4.4, 3.2, 4.8),
+
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 })
+
+    );
+
+    ghBody.position.y = 1.6;
+
+    ghBody.castShadow = true;
+
+    const ghRoof = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.45, 5.8), blueRoofMat);
+
+    ghRoof.position.y = 3.35;
+
+    guardHouse.add(ghBody, ghRoof);
+
+    guardHouse.position.set(-23, 0, -34);
+
+    guardHouse.rotation.y = 0.25;
+
+    rightSideGroup.add(guardHouse);
+
+    const wedgeShape = new THREE.Shape();
+
+    wedgeShape.moveTo(-16.5, -42);
+
+    wedgeShape.lineTo(-12.5, -42);
+
+    wedgeShape.lineTo(-12.5, -98);
+
+    wedgeShape.lineTo(-38.0, -98);
+
+    wedgeShape.closePath();
+
+    const wedgeWalls = new THREE.Mesh(
+
+      new THREE.ExtrudeGeometry(wedgeShape, { depth: 5.4, bevelEnabled: false }),
+
+      concreteWallMat
+
+    );
+
+    wedgeWalls.rotation.x = Math.PI / 2;
+
+    wedgeWalls.position.y = 5.4;
+
+    wedgeWalls.castShadow = true;
+
+    const wedgeRoof = new THREE.Mesh(
+
+      new THREE.ExtrudeGeometry(wedgeShape, { depth: 0.45, bevelEnabled: false }),
+
+      blueRoofMat
+
+    );
+
+    wedgeRoof.rotation.x = Math.PI / 2;
+
+    wedgeRoof.position.y = 5.65;
+
+    rightSideGroup.add(wedgeWalls, wedgeRoof);
+
+    const ventMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.4 });
+
+    for (let i = 0; i < 5; i++) {
+
+      const zPos = -49 - i * 9.5;
+
+      const minX = -16 - i * 4.2;
+
+      for (let vx = -14.5; vx >= minX; vx -= 3.6) {
+
+        const vent = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.45, 0.75), ventMat);
+
+        vent.position.set(vx, 5.85, zPos);
+
+        rightSideGroup.add(vent);
+
+      }
+
+    }
+
+    for (let deg of [55, 72, 90, 108, 125]) {
+
+      const treePt = getProtractorPoint(deg, 22, 0);
+
+      const t = createTreeMesh(1.15);
+
+      t.position.copy(treePt);
+
+      exteriorGroup.add(t);
+
+    }
+
+    // =========================================================
+
+    // ۶. چهار سوله با عرض ۲۳.۵ متر + نورگیر سقفی
+
+    // =========================================================
+
+    const dir130 = getProtractorDir(130);
+
+    const fourHallsMasterGroup = new THREE.Group();
+
+    const hallOriginWorld = getProtractorPoint(90, 60, 0);
+
+    fourHallsMasterGroup.position.copy(hallOriginWorld);
+
+    fourHallsMasterGroup.rotation.y = dir130.rotY;
+
+    scene.add(fourHallsMasterGroup);
+
+    const bayW = 23.5;
+
+    const bayCentersX = [-35.25, -11.75, 11.75, 35.25];
+
+    const mainHallH = 12.2;
+
+    const uniformHallLen = 84;
+
+    bayCentersX.forEach((cx, b) => {
+
+      const frontRoof = createGabledRoof(bayW - 0.2, 42, 3.15, blueRoofMat);
+
+      frontRoof.position.set(cx, mainHallH, -42);
+
+      fourHallsMasterGroup.add(frontRoof);
+
+      const backRoof = createGabledRoof(bayW - 0.2, 42, 3.35, blueRoofMat);
+
+      backRoof.position.set(cx, mainHallH + 0.38, -84);
+
+      fourHallsMasterGroup.add(backRoof);
+
+      if (b < 3) {
+
+        const gutter = new THREE.Mesh(
+
+          new THREE.BoxGeometry(0.55, 0.32, uniformHallLen),
+
+          new THREE.MeshStandardMaterial({ color: 0x001a4d, roughness: 0.65 })
+
+        );
+
+        gutter.position.set(cx + bayW / 2, mainHallH + 0.12, -uniformHallLen / 2);
+
+        fourHallsMasterGroup.add(gutter);
+
+      }
+
+      const topBlueFacade = new THREE.Mesh(new THREE.BoxGeometry(bayW, 5.6, 0.65), facadeBlueMat);
+
+      topBlueFacade.position.set(cx, mainHallH - 2.8, 0);
+
+      fourHallsMasterGroup.add(topBlueFacade);
+
+      const gableWall = createGabledRoof(bayW, 0.65, 3.15, facadeBlueMat);
+
+      gableWall.position.set(cx, mainHallH, -0.32);
+
+      fourHallsMasterGroup.add(gableWall);
+
+      const winMesh = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.0), gridWinMat);
+
+      winMesh.position.set(cx + 1.6, mainHallH - 2.7, 0.38);
+
+      fourHallsMasterGroup.add(winMesh);
+
+      const lowWallL = new THREE.Mesh(new THREE.BoxGeometry(8.2, 6.6, 0.65), concreteWallMat);
+
+      lowWallL.position.set(cx - 6.6, 3.3, 0);
+
+      const lowWallR = new THREE.Mesh(new THREE.BoxGeometry(4.2, 6.6, 0.65), concreteWallMat);
+
+      lowWallR.position.set(cx + 8.0, 3.3, 0);
+
+      fourHallsMasterGroup.add(lowWallL, lowWallR);
+
+      const subDoor = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 4.2), lightDoorMat);
+
+      subDoor.position.set(cx - 6.0, 2.1, 0.38);
+
+      fourHallsMasterGroup.add(subDoor);
+
+      if (b !== 2) {
+
+        const darkGate = new THREE.Mesh(new THREE.PlaneGeometry(6.5, 6.2), darkOpeningMat);
+
+        darkGate.position.set(cx + 2.0, 3.1, 0.1);
+
+        fourHallsMasterGroup.add(darkGate);
+
+      }
+
+      for (let sx of [-bayW * 0.42, -bayW * 0.14, bayW * 0.14, bayW * 0.42]) {
+
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.35, 6.6, 0.35), steelColumnMat);
+
+        col.position.set(cx + sx, 3.3, 0.2);
+
+        fourHallsMasterGroup.add(col);
+
+      }
+
+      for (let i = 0; i < 6; i++) {
+
+        const vent = new THREE.Mesh(
+
+          new THREE.BoxGeometry(1.3, 0.65, 2.2),
+
+          new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.4 })
+
+        );
+
+        vent.position.set(cx + (i % 2 === 0 ? -5.0 : 5.0), mainHallH + 3.1, -14 - i * 12);
+
+        fourHallsMasterGroup.add(vent);
+
+      }
+
+      // نورگیرهای سقفی (اسکای‌لایت) در راستای خط قرعه
+
+      for (let sz = -8; sz >= -36; sz -= 12) {
+
+        const sky1 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.1, 5.2), skylightMat);
+
+        sky1.position.set(cx, mainHallH + 3.22, sz);
+
+        fourHallsMasterGroup.add(sky1);
+
+      }
+
+      for (let sz = -46; sz >= -80; sz -= 12) {
+
+        const sky2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.1, 5.2), skylightMat);
+
+        sky2.position.set(cx, mainHallH + 3.8, sz);
+
+        fourHallsMasterGroup.add(sky2);
+
+      }
+
+    });
+
+    const sideWallL1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6.6, uniformHallLen), concreteWallMat);
+
+    sideWallL1.position.set(-47.0, 3.3, -uniformHallLen / 2);
+
+    const sideWallL2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5.8, uniformHallLen), facadeBlueMat);
+
+    sideWallL2.position.set(-47.0, 9.3, -uniformHallLen / 2);
+
+    const sideWallR1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6.6, uniformHallLen), concreteWallMat);
+
+    sideWallR1.position.set(47.0, 3.3, -uniformHallLen / 2);
+
+    const sideWallR2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5.8, uniformHallLen), facadeBlueMat);
+
+    sideWallR2.position.set(47.0, 9.3, -uniformHallLen / 2);
+
+    fourHallsMasterGroup.add(sideWallL1, sideWallL2, sideWallR1, sideWallR2);
+
+    const backOrchardGroup = new THREE.Group();
+
+    for (let gx = -44; gx <= 44; gx += 7.0) {
+
+      for (let gz = -89; gz >= -130; gz -= 6.2) {
+
+        const tree = createTreeMesh(1.1);
+
+        tree.position.set(gx + (gz % 2) * 1.4, 0, gz);
+
+        backOrchardGroup.add(tree);
+
+      }
+
+    }
+
+    fourHallsMasterGroup.add(backOrchardGroup);
+
+    // =========================================================
+
+    // ۷. بازطراحی داخلی سوله سوم — سیستم کف و علائم 5S
+
+    // =========================================================
+
+    const bay3LocalX = 11.75;
+
+    const deepInteriorGroup = new THREE.Group();
+
+    deepInteriorGroup.visible = false;
+
+    fourHallsMasterGroup.add(deepInteriorGroup);
+
+    function addByZ(obj, z) {
+
+      if (z > -82) { fourHallsMasterGroup.add(obj); } else { deepInteriorGroup.add(obj); }
+
+    }
+
+    // کف پایه (مثل طرح قبلی)
+
+    const interiorFloor = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(62, 84),
+
+      new THREE.MeshStandardMaterial({ color: 0x525b66, roughness: 0.6 })
+
+    );
+
+    interiorFloor.rotation.x = -Math.PI / 2;
+
+    interiorFloor.position.set(bay3LocalX, 0.03, -42);
+
+    fourHallsMasterGroup.add(interiorFloor);
+
+    const deepFloor = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(62, 110),
+
+      new THREE.MeshStandardMaterial({ color: 0x3f4650, roughness: 0.6 })
+
+    );
+
+    deepFloor.rotation.x = -Math.PI / 2;
+
+    deepFloor.position.set(bay3LocalX, 0.03, -139);
+
+    deepInteriorGroup.add(deepFloor);
+
+    // کف اپوکسی روشن سوله سوم (دو تکه: جلو و عمق)
+
+    const bayFloorFront = new THREE.Mesh(new THREE.PlaneGeometry(23.4, 84), epoxyFloorMat);
+
+    bayFloorFront.rotation.x = -Math.PI / 2;
+
+    bayFloorFront.position.set(bay3LocalX, 0.045, -42);
+
+    fourHallsMasterGroup.add(bayFloorFront);
+
+    const bayFloorDeep = new THREE.Mesh(new THREE.PlaneGeometry(23.4, 106), epoxyFloorMat);
+
+    bayFloorDeep.rotation.x = -Math.PI / 2;
+
+    bayFloorDeep.position.set(bay3LocalX, 0.045, -137);
+
+    deepInteriorGroup.add(bayFloorDeep);
+
+    // تینت رنگی زون انبار
+
+    const whTint = new THREE.Mesh(
+
+      new THREE.PlaneGeometry(23.0, 52),
+
+      new THREE.MeshBasicMaterial({ color: 0x14b8a6, transparent: true, opacity: 0.05 })
+
+    );
+
+    whTint.rotation.x = -Math.PI / 2;
+
+    whTint.position.set(bay3LocalX, 0.05, -140);
+
+    deepInteriorGroup.add(whTint);
+
+    // خطوط راهروی اصلی (زرد)
+
+    function flatPlane(w, l, mat, x, y, z) {
+
+      const p = new THREE.Mesh(new THREE.PlaneGeometry(w, l), mat);
+
+      p.rotation.x = -Math.PI / 2;
+
+      p.position.set(x, y, z);
+
+      return p;
+
+    }
+
+    fourHallsMasterGroup.add(flatPlane(0.15, 78, lineYellowMat, 8.6, 0.062, -41));
+
+    fourHallsMasterGroup.add(flatPlane(0.15, 78, lineYellowMat, 14.9, 0.062, -41));
+
+    deepInteriorGroup.add(flatPlane(0.15, 82, lineYellowMat, 8.6, 0.062, -125));
+
+    deepInteriorGroup.add(flatPlane(0.15, 82, lineYellowMat, 14.9, 0.062, -125));
+
+    // واک‌وی سبز عابر پیاده (سمت راست، سراسری)
+
+    fourHallsMasterGroup.add(flatPlane(1.8, 78, walkGreenMat, 22.3, 0.055, -41));
+
+    deepInteriorGroup.add(flatPlane(1.8, 96, walkGreenMat, 22.3, 0.055, -132));
+
+    fourHallsMasterGroup.add(flatPlane(0.1, 78, lineWhiteMat, 21.35, 0.06, -41));
+
+    deepInteriorGroup.add(flatPlane(0.1, 96, lineWhiteMat, 21.35, 0.06, -132));
+
+    // خط‌کشی عابر (زبیک) در تقاطع‌ها
+
+    for (let cxz = 9.05; cxz <= 14.6; cxz += 1.1) {
+
+      const zb1 = flatPlane(0.55, 1.4, lineWhiteMat, cxz, 0.065, -60);
+
+      fourHallsMasterGroup.add(zb1);
+
+      const zb2 = flatPlane(0.55, 1.4, lineWhiteMat, cxz, 0.065, -114);
+
+      deepInteriorGroup.add(zb2);
+
+    }
+
+    // نوار هشدار ورود به فروشگاه رنگ
+
+    const hazardStrip = flatPlane(4.8, 0.9, hazardMat, bay3LocalX, 0.065, -62.6);
+
+    fourHallsMasterGroup.add(hazardStrip);
+
+    // دکال‌های نام زون روی کف
+
+    function floorDecal(fa, en, color, x, z) {
+
+      const tex = createFloorDecalTex(fa, en, color);
+
+      const p = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(3.4, 1.3),
+
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+
+      );
+
+      p.rotation.x = -Math.PI / 2;
+
+      p.position.set(x, 0.068, z);
+
+      return p;
+
+    }
+
+    fourHallsMasterGroup.add(floorDecal('تولید', 'PRODUCTION', '#1d4ed8', 10.2, -30));
+
+    fourHallsMasterGroup.add(floorDecal('رنگ', 'PAINT', '#ea580c', 13.3, -58.6));
+
+    deepInteriorGroup.add(floorDecal('انبار', 'WAREHOUSE', '#0f766e', 10.2, -121));
+
+    deepInteriorGroup.add(floorDecal('بارگیری', 'SHIPPING', '#15803d', 10.2, -166));
+
+    // ورودی: مت، تابلو ایمنی، کپسول
+
+    const entryMat = flatPlane(4.2, 2.2, darkOpeningMat, bay3LocalX, 0.055, -2.6);
+
+    fourHallsMasterGroup.add(entryMat);
+
+    const boardGroup = new THREE.Group();
+
+    const boardPanel = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.5, 0.08), new THREE.MeshBasicMaterial({ map: createSafetyBoardTex() }));
+
+    boardPanel.position.y = 1.9;
+
+    const boardLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 0.1), darkSteelMat);
+
+    boardLeg1.position.set(-1.1, 0.6, 0);
+
+    const boardLeg2 = boardLeg1.clone();
+
+    boardLeg2.position.x = 1.1;
+
+    boardGroup.add(boardPanel, boardLeg1, boardLeg2);
+
+    boardGroup.position.set(2.6, 0, -4);
+
+    fourHallsMasterGroup.add(boardGroup);
+
+    function fireExtinguisher(x, z, parent) {
+
+      const g = new THREE.Group();
+
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), darkSteelMat);
+
+      post.position.y = 0.45;
+
+      const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.55, 10), extingMat);
+
+      tank.position.y = 0.75;
+
+      g.add(post, tank);
+
+      g.position.set(x, 0, z);
+
+      parent.add(g);
+
+    }
+
+    fireExtinguisher(21.6, -6, fourHallsMasterGroup);
+
+    fireExtinguisher(20.4, -63.2, fourHallsMasterGroup);
+
+    fireExtinguisher(21.6, -117, deepInteriorGroup);
+
+    fireExtinguisher(21.6, -168, deepInteriorGroup);
+
+    // =========================================================
+
+    // ۸. زون تولید — ۸ دستگاه تزریق + نوار نقاله مرکزی
+
+    // =========================================================
+
+    function createIMM() {
+
+      const m = new THREE.Group();
+
+      const plinth = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.3, 7.4), darkSteelMat);
+
+      plinth.position.y = 0.15;
+
+      m.add(plinth);
+
+      // واحد بستن (جلوی دستگاه)
+
+      const clamp = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.9, 3.0), machineBlueMat);
+
+      clamp.position.set(0, 1.75, 1.7);
+
+      clamp.castShadow = true;
+
+      m.add(clamp);
+
+      const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.1, 0.1), machineDoorMat);
+
+      doorFrame.position.set(0, 1.55, 3.22);
+
+      m.add(doorFrame);
+
+      const doorWin = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.5), windowGlowMat);
+
+      doorWin.position.set(0, 1.6, 3.29);
+
+      m.add(doorWin);
+
+      const platenTail = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.2, 0.5), silverMat);
+
+      platenTail.position.set(0, 1.5, 0.1);
+
+      m.add(platenTail);
+
+      // واحد تزریق (عقب)
+
+      const injUnit = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.4, 3.4), machineBlueMat);
+
+      injUnit.position.set(0, 1.55, -1.9);
+
+      m.add(injUnit);
+
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.1, 12), silverMat);
+
+      barrel.rotation.x = Math.PI / 2;
+
+      barrel.position.set(0, 1.55, -0.1);
+
+      m.add(barrel);
+
+      const hopper = new THREE.Mesh(new THREE.ConeGeometry(0.62, 1.1, 12), silverMat);
+
+      hopper.position.set(0, 2.85, -2.4);
+
+      m.add(hopper);
+
+      const dryer = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.15, 1.05), silverMat);
+
+      dryer.position.set(0, 3.85, -2.4);
+
+      m.add(dryer);
+
+      const dryerLegs = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.0, 0.16), darkSteelMat);
+
+      dryerLegs.position.set(0, 3.2, -2.4);
+
+      m.add(dryerLegs);
+
+      // تابلو کنترل
+
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.8, 1.15), cabinetMat);
+
+      cab.position.set(2.05, 1.2, 1.2);
+
+      m.add(cab);
+
+      const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.4), screenMat);
+
+      scr.position.set(2.47, 1.55, 1.2);
+
+      scr.rotation.y = Math.PI / 2;
+
+      m.add(scr);
+
+      // بازوی رباتیک برداشت (استند یوشین)
+
+      const robBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 1.4), darkSteelMat);
+
+      robBase.position.set(0, 3.45, 1.7);
+
+      m.add(robBase);
+
+      const robVert = new THREE.Mesh(new THREE.BoxGeometry(0.24, 2.3, 0.4), cabinetMat);
+
+      robVert.position.set(0, 2.35, 1.9);
+
+      m.add(robVert);
+
+      const robArm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 3.9), cabinetMat);
+
+      robArm.position.set(0, 3.6, 3.4);
+
+      m.add(robArm);
+
+      const robGrip = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.5), darkSteelMat);
+
+      robGrip.position.set(0, 2.9, 5.1);
+
+      m.add(robGrip);
+
+      // حفاظ ایمنی زرد (دو طرف و عقب)
+
+      const postGeo = new THREE.BoxGeometry(0.09, 2.3, 0.09);
+
+      const fenceY = 1.15;
+
+      const postsL = [[-1.85, -3.5], [-1.85, 0.5], [1.85, -3.5], [1.85, 0.5], [-1.85, 3.3], [1.85, 3.3]];
+
+      postsL.forEach(pt => {
+
+        const post = new THREE.Mesh(postGeo, lineYellowMat);
+
+        post.position.set(pt[0], fenceY, pt[1]);
+
+        m.add(post);
+
+      });
+
+      const panelL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.9, 7.2), fenceMat);
+
+      panelL.position.set(-1.85, fenceY, 0);
+
+      m.add(panelL);
+
+      const panelR = panelL.clone();
+
+      panelR.position.x = 1.85;
+
+      m.add(panelR);
+
+      const panelB = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.9, 0.05), fenceMat);
+
+      panelB.position.set(0, fenceY, -3.5);
+
+      m.add(panelB);
+
+      return m;
+
+    }
+
+    const immZ = [-15, -26, -37, -48];
+
+    immZ.forEach(z => {
+
+      const mLeft = createIMM();
+
+      mLeft.rotation.y = Math.PI / 2;
+
+      mLeft.position.set(5.2, 0, z);
+
+      fourHallsMasterGroup.add(mLeft);
+
+      const mRight = createIMM();
+
+      mRight.rotation.y = -Math.PI / 2;
+
+      mRight.position.set(18.3, 0, z);
+
+      fourHallsMasterGroup.add(mRight);
+
+    });
+
+    // نوار نقاله مرکزی انتقال سپر به رنگ
+
+    const convGroup = new THREE.Group();
+
+    const convFrame = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.14, 53), darkSteelMat);
+
+    convFrame.position.set(0, 0.86, 0);
+
+    convGroup.add(convFrame);
+
+    const convRailL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 53), silverMat);
+
+    convRailL.position.set(-0.45, 0.97, 0);
+
+    const convRailR = convRailL.clone();
+
+    convRailR.position.x = 0.45;
+
+    convGroup.add(convRailL, convRailR);
+
+    for (let lz = -25; lz <= 25; lz += 4) {
+
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.82, 0.12), darkSteelMat);
+
+      leg.position.set(0, 0.41, lz);
+
+      convGroup.add(leg);
+
+    }
+
+    convGroup.position.set(10.0, 0, -34.5);
+
+    fourHallsMasterGroup.add(convGroup);
+
+    // سپرهای متحرک روی نقاله (انیمیشن جریان)
+
+    const flowBumpers = [];
+
+    for (let i = 0; i < 4; i++) {
+
+      const b = createBumperMesh(0x1a1e24);
+
+      b.rotation.y = Math.PI / 2;
+
+      b.position.set(10.0, 1.28, -10 - i * 13);
+
+      fourHallsMasterGroup.add(b);
+
+      flowBumpers.push(b);
+
+    }
+
+    // ایستگاه کنترل کیفیت (قبل از رنگ)
+
+    const qcGroup = new THREE.Group();
+
+    const qcTable = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.09, 1.1), cabinetMat);
+
+    qcTable.position.y = 0.95;
+
+    qcGroup.add(qcTable);
+
+    const qcLegGeo = new THREE.BoxGeometry(0.1, 0.95, 0.1);
+
+    [[-1.05, -0.4], [1.05, -0.4], [-1.05, 0.4], [1.05, 0.4]].forEach(pt => {
+
+      const leg = new THREE.Mesh(qcLegGeo, darkSteelMat);
+
+      leg.position.set(pt[0], 0.475, pt[1]);
+
+      qcGroup.add(leg);
+
+    });
+
+    const qcMonitor = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.45, 0.06), screenMat);
+
+    qcMonitor.position.set(-0.5, 1.35, 0);
+
+    qcGroup.add(qcMonitor);
+
+    const qcLightBar = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.06, 0.3), ledDiscMat);
+
+    qcLightBar.position.set(0.2, 2.05, 0);
+
+    qcGroup.add(qcLightBar);
+
+    const qcPost = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.0, 0.06), darkSteelMat);
+
+    qcPost.position.set(0.2, 1.5, 0);
+
+    qcGroup.add(qcPost);
+
+    qcGroup.position.set(16.6, 0, -57);
+
+    qcGroup.rotation.y = -Math.PI / 2;
+
+    fourHallsMasterGroup.add(qcGroup);
+
+    const qcWorker = createWorkerMesh(0x1e2a3a, false);
+
+    qcWorker.position.set(15.4, 0, -57.3);
+
+    qcWorker.rotation.y = Math.PI / 2.4;
+
+    fourHallsMasterGroup.add(qcWorker);
+
+    // استقرار مواد اولیه (گونی‌های گرماژ و پالت)
+
+    for (let i = 0; i < 3; i++) {
+
+      const pal = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.14, 1.1), palletMat);
+
+      pal.position.set(2.4, 0.07, -5.5 - i * 1.9);
+
+      fourHallsMasterGroup.add(pal);
+
+      const bag = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.05, 0.95), goodsWhiteMat);
+
+      bag.position.set(2.4, 0.68, -5.5 - i * 1.9);
+
+      bag.rotation.y = (i % 2) * 0.14;
+
+      fourHallsMasterGroup.add(bag);
+
+    }
+
+    // اپراتورهای تولید
+
+    const w1 = createWorkerMesh(0x1e2a3a, false);
+
+    w1.position.set(9.6, 0, -18);
+
+    w1.rotation.y = -Math.PI / 2;
+
+    fourHallsMasterGroup.add(w1);
+
+    const w2 = createWorkerMesh(0x24344a, false);
+
+    w2.position.set(13.8, 0, -40);
+
+    w2.rotation.y = Math.PI / 2;
+
+    fourHallsMasterGroup.add(w2);
+
+    const w3 = createWorkerMesh(0x1e2a3a, false);
+
+    w3.position.set(6.8, 0, -50);
+
+    w3.rotation.y = -Math.PI / 3;
+
+    fourHallsMasterGroup.add(w3);
+
+    // =========================================================
+
+    // ۹. فروشگاه رنگ ایزوله (کف مشبک + کابین + کانوایر آویز)
+
+    // =========================================================
+
+    const paintX0 = 2.75, paintX1 = 20.75;
+
+    const paintCeilMat = new THREE.MeshStandardMaterial({ color: 0x2e3540, roughness: 0.7 });
+
+    function createXMarkTex() {
+
+      const c = document.createElement('canvas');
+
+      c.width = c.height = 128;
+
+      const ctx = c.getContext('2d');
+
+      ctx.clearRect(0, 0, 128, 128);
+
+      ctx.strokeStyle = '#dc2626';
+
+      ctx.lineWidth = 14;
+
+      ctx.beginPath(); ctx.moveTo(18, 18); ctx.lineTo(110, 110); ctx.stroke();
+
+      ctx.beginPath(); ctx.moveTo(110, 18); ctx.lineTo(18, 110); ctx.stroke();
+
+      return new THREE.CanvasTexture(c);
+
+    }
+
+    const xMarkMat = new THREE.MeshBasicMaterial({ map: createXMarkTex(), transparent: true });
+
+    // دیوارهای محیطی اتاق رنگ (پایین ورق، بالا شیشه با قاب)
+
+    function paintSideWallX(x, zCenter, len, isRight) {
+
+      const g = new THREE.Group();
+
+      const lowerMat = isRight ? tileWhiteMat : facadeBlueMat;
+
+      const lower = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.2, len), lowerMat);
+
+      lower.position.y = 1.6;
+
+      g.add(lower);
+
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.8, len), glassMat);
+
+      glass.position.y = 4.6;
+
+      g.add(glass);
+
+      for (let mz = -len / 2 + 2; mz <= len / 2; mz += 4) {
+
+        const mul = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.9, 0.14), blueSteelMat);
+
+        mul.position.set(0, 4.6, mz);
+
+        g.add(mul);
+
+      }
+
+      const header = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.2, len), facadeBlueMat);
+
+      header.position.y = 6.6;
+
+      g.add(header);
+
+      g.position.set(x, 0, zCenter);
+
+      return g;
+
+    }
+
+    // جلو (z=-64) با دهانه ۴.۶ متری
+
+    (function buildPaintFrontWall() {
+
+      const g = new THREE.Group();
+
+      const segW = 6.7;
+
+      [-1, 1].forEach(s => {
+
+        const cx = bay3LocalX + s * (2.3 + segW / 2);
+
+        const lower = new THREE.Mesh(new THREE.BoxGeometry(segW, 3.2, 0.22), facadeBlueMat);
+
+        lower.position.set(cx, 1.6, 0);
+
+        g.add(lower);
+
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(segW, 2.8, 0.06), glassMat);
+
+        glass.position.set(cx, 4.6, 0);
+
+        g.add(glass);
+
+        const header = new THREE.Mesh(new THREE.BoxGeometry(segW, 1.2, 0.24), facadeBlueMat);
+
+        header.position.set(cx, 6.6, 0);
+
+        g.add(header);
+
+      });
+
+      const openingGlass = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.4, 0.06), glassMat);
+
+      openingGlass.position.set(bay3LocalX, 5.3, 0);
+
+      g.add(openingGlass);
+
+      const openingHeader = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.2, 0.24), facadeBlueMat);
+
+      openingHeader.position.set(bay3LocalX, 6.6, 0);
+
+      g.add(openingHeader);
+
+      const hz = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 0.5), hazardMat);
+
+      hz.position.set(bay3LocalX, 4.85, 0.14);
+
+      g.add(hz);
+
+      const xm1 = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.8), xMarkMat);
+
+      xm1.position.set(bay3LocalX - 4.2, 4.7, 0.06);
+
+      g.add(xm1);
+
+      const xm2 = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.8), xMarkMat);
+
+      xm2.position.set(bay3LocalX + 4.2, 4.7, 0.06);
+
+      g.add(xm2);
+
+      g.position.set(0, 0, -64);
+
+      fourHallsMasterGroup.add(g);
+
+    })();
+
+    // دیوار عقب (z=-108) با دهانه خروج ۳.۶ متری
+
+    (function buildPaintRearWall() {
+
+      const g = new THREE.Group();
+
+      const segW = 7.2;
+
+      [-1, 1].forEach(s => {
+
+        const cx = bay3LocalX + s * (1.8 + segW / 2);
+
+        const lower = new THREE.Mesh(new THREE.BoxGeometry(segW, 3.2, 0.22), facadeBlueMat);
+
+        lower.position.set(cx, 1.6, 0);
+
+        g.add(lower);
+
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(segW, 2.8, 0.06), glassMat);
+
+        glass.position.set(cx, 4.6, 0);
+
+        g.add(glass);
+
+        const header = new THREE.Mesh(new THREE.BoxGeometry(segW, 1.2, 0.24), facadeBlueMat);
+
+        header.position.set(cx, 6.6, 0);
+
+        g.add(header);
+
+      });
+
+      const openingGlass = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.4, 0.06), glassMat);
+
+      openingGlass.position.set(bay3LocalX, 5.3, 0);
+
+      g.add(openingGlass);
+
+      const openingHeader = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.2, 0.24), facadeBlueMat);
+
+      openingHeader.position.set(bay3LocalX, 6.6, 0);
+
+      g.add(openingHeader);
+
+      g.position.set(0, 0, -108);
+
+      deepInteriorGroup.add(g);
+
+    })();
+
+    fourHallsMasterGroup.add(paintSideWallX(paintX0, -73, 18, false));
+
+    fourHallsMasterGroup.add(paintSideWallX(paintX1, -73, 18, true));
+
+    deepInteriorGroup.add(paintSideWallX(paintX0, -95, 26, false));
+
+    deepInteriorGroup.add(paintSideWallX(paintX1, -95, 26, true));
+
+    // درب سرویس سمت راست + علامت X
+
+    const svcDoor = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 2.5), lightDoorMat);
+
+    svcDoor.rotation.y = -Math.PI / 2;
+
+    svcDoor.position.set(paintX1 - 0.13, 1.7, -70);
+
+    fourHallsMasterGroup.add(svcDoor);
+
+    const svcX = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), xMarkMat);
+
+    svcX.rotation.y = -Math.PI / 2;
+
+    svcX.position.set(paintX1 - 0.16, 2.5, -70);
+
+    fourHallsMasterGroup.add(svcX);
+
+    // سقف اتاق رنگ
+
+    const paintCeilF = new THREE.Mesh(new THREE.BoxGeometry(18, 0.15, 18), paintCeilMat);
+
+    paintCeilF.position.set(bay3LocalX, 7.2, -73);
+
+    fourHallsMasterGroup.add(paintCeilF);
+
+    const paintCeilR = new THREE.Mesh(new THREE.BoxGeometry(18, 0.15, 26), paintCeilMat);
+
+    paintCeilR.position.set(bay3LocalX, 7.2, -95);
+
+    deepInteriorGroup.add(paintCeilR);
+
+    // کف مشبک بالاکشیده (دو تکه) + پله ورود
+
+    const grateFront = new THREE.Mesh(new THREE.BoxGeometry(15.9, 0.45, 16), gratingMat);
+
+    grateFront.position.set(bay3LocalX, 0.225, -74);
+
+    fourHallsMasterGroup.add(grateFront);
+
+    const grateRear = new THREE.Mesh(new THREE.BoxGeometry(15.9, 0.45, 24), gratingMat);
+
+    grateRear.position.set(bay3LocalX, 0.225, -94);
+
+    deepInteriorGroup.add(grateRear);
+
+    const grateStep = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.24, 0.8), gratingMat);
+
+    grateStep.position.set(bay3LocalX, 0.12, -63.35);
+
+    fourHallsMasterGroup.add(grateStep);
+
+    // جاذب‌های ورود (بولارد زرد)
+
+    [[9.1, -63.3], [14.4, -63.3]].forEach(pt => {
+
+      const bol = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.9, 10), bollardMat);
+
+      bol.position.set(pt[0], 0.45, pt[1]);
+
+      fourHallsMasterGroup.add(bol);
+
+    });
+
+    // ریل کانوایر آویز
+
+    const railFront = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 18), darkSteelMat);
+
+    railFront.position.set(10.0, 5.35, -73);
+
+    fourHallsMasterGroup.add(railFront);
+
+    const railRear = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 26), darkSteelMat);
+
+    railRear.position.set(10.0, 5.35, -95);
+
+    deepInteriorGroup.add(railRear);
+
+    // قلاب‌های متحرک با سپر آویز
+
+    const paintHooks = [];
+
+    for (let i = 0; i < 8; i++) {
+
+      const h = new THREE.Group();
+
+      const trolley = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.22, 0.4), darkSteelMat);
+
+      trolley.position.y = 5.05;
+
+      const link = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.5, 0.05), silverMat);
+
+      link.position.y = 4.2;
+
+      const hookArm = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 0.06), silverMat);
+
+      hookArm.position.y = 3.5;
+
+      const bp = createBumperMesh(0x0d1117);
+
+      bp.position.y = 3.15;
+
+      h.add(trolley, link, hookArm, bp);
+
+      h.position.set(10.0, 0, -68 - i * 5);
+
+      deepInteriorGroup.add(h);
+
+      paintHooks.push(h);
+
+    }
+
+    // کابین‌های رنگ (سه عدد) + هود مکش + کانال
+
+    function createPaintBooth(zCenter, withWorker) {
+
+      const g = new THREE.Group();
+
+      const postGeo = new THREE.BoxGeometry(0.14, 3.6, 0.14);
+
+      [[-1.6, -1.9], [1.6, -1.9], [-1.6, 1.9], [1.6, 1.9]].forEach(pt => {
+
+        const post = new THREE.Mesh(postGeo, blueSteelMat);
+
+        post.position.set(pt[0], 1.8, pt[1]);
+
+        g.add(post);
+
+      });
+
+      const roofF = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.12, 4.0), blueSteelMat);
+
+      roofF.position.y = 3.66;
+
+      g.add(roofF);
+
+      const glassB = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.6, 0.04), glassMat);
+
+      glassB.position.set(0, 1.9, -1.9);
+
+      const glassF = glassB.clone();
+
+      glassF.position.z = 1.9;
+
+      const glassL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 2.6, 3.8), glassMat);
+
+      glassL.position.set(-1.6, 1.9, 0);
+
+      g.add(glassB, glassF, glassL);
+
+      const standPost = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5, 8), cabinetMat);
+
+      standPost.position.set(0.2, 0.75, 0);
+
+      g.add(standPost);
+
+      const armA = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 1.1), cabinetMat);
+
+      armA.position.set(0.2, 1.45, 0);
+
+      const armB = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 1.1), cabinetMat);
+
+      armB.position.set(0.2, 0.95, 0);
+
+      g.add(armA, armB);
+
+      const boothBumper = createBumperMesh(0x0f172a);
+
+      boothBumper.rotation.y = Math.PI / 2;
+
+      boothBumper.position.set(0.2, 1.62, 0);
+
+      g.add(boothBumper);
+
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.85, 2.9), hoodMat);
+
+      hood.position.set(0, 4.35, 0);
+
+      g.add(hood);
+
+      const hoodTrim = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.1, 3.1), darkSteelMat);
+
+      hoodTrim.position.set(0, 3.9, 0);
+
+      g.add(hoodTrim);
+
+      const duct = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 2.7, 12), silverMat);
+
+      duct.position.set(0, 6.1, 0);
+
+      g.add(duct);
+
+      if (withWorker) {
+
+        const sprayer = createWorkerMesh(0xf1f5f9, true);
+
+        sprayer.position.set(-0.7, 0, 0.6);
+
+        sprayer.rotation.y = Math.PI / 3;
+
+        g.add(sprayer);
+
+      }
+
+      g.position.set(6.8, 0.45, zCenter);
+
+      return g;
+
+    }
+
+    fourHallsMasterGroup.add(createPaintBooth(-72, true));
+
+    deepInteriorGroup.add(createPaintBooth(-82, false));
+
+    deepInteriorGroup.add(createPaintBooth(-92, false));
+
+    // زون فلش‌آف (پنل‌های گرم)
+
+    const flashA = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.4, 4.5), flashGlowMat);
+
+    flashA.position.set(8.4, 2.55, -99);
+
+    deepInteriorGroup.add(flashA);
+
+    const flashB = flashA.clone();
+
+    flashB.position.x = 15.1;
+
+    deepInteriorGroup.add(flashB);
+
+    // اپراتور تخلیه خروجی رنگ
+
+    const paintExitWorker = createWorkerMesh(0x64748b, false);
+
+    paintExitWorker.position.set(13.6, 0.45, -105.4);
+
+    paintExitWorker.rotation.y = -Math.PI / 2.2;
+
+    deepInteriorGroup.add(paintExitWorker);
+
+    // =========================================================
+
+    // ۱۰. خنک‌سازی/بازرسی، انبار پالتی و اسکله بارگیری
+
+    // =========================================================
+
+    function createCoolingRack(x, z) {
+
+      const g = new THREE.Group();
+
+      const top = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.1, 1.3), darkSteelMat);
+
+      top.position.y = 0.95;
+
+      g.add(top);
+
+      [[-1.35, -0.5], [1.35, -0.5], [-1.35, 0.5], [1.35, 0.5]].forEach(pt => {
+
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.95, 0.09), darkSteelMat);
+
+        leg.position.set(pt[0], 0.475, pt[1]);
+
+        g.add(leg);
+
+      });
+
+      [-0.7, 0.7].forEach(dx => {
+
+        const bp = createBumperMesh(0x111418);
+
+        bp.position.set(dx, 1.25, 0);
+
+        g.add(bp);
+
+      });
+
+      g.position.set(x, 0, z);
+
+      return g;
+
+    }
+
+    deepInteriorGroup.add(createCoolingRack(6.0, -111.5));
+
+    deepInteriorGroup.add(createCoolingRack(17.5, -111.5));
+
+    // انبار — رک‌های پالتی (InstancedMesh)
+
+    const rackZ0 = -118, rackZ1 = -158, bayCount = 14, bayW2 = 2.8;
+
+    const xLines = [3.2, 5.8, 17.0, 19.6];
+
+    const postMat = rackBlueMat;
+
+    const postInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, 5.2, 0.12), postMat, xLines.length * (bayCount + 1) * 2);
+
+    const beamInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.14, 2.66), beamOrangeMat, xLines.length * bayCount * 6);
+
+    const palletInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1.0, 0.12, 1.15), palletMat, 260);
+
+    const goodsWInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.92, 1.0, 1.02), goodsWhiteMat, 130);
+
+    const goodsBInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.92, 1.0, 1.02), goodsBeigeMat, 130);
+
+    const goodsDInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.92, 0.85, 1.02), goodsDarkMat, 60);
+
+    const dummy = new THREE.Object3D();
+
+    let postIdx = 0, beamIdx = 0, palIdx = 0, wIdx = 0, bIdx = 0, dIdx = 0;
+
+    const levels = [1.5, 2.95, 4.4];
+
+    xLines.forEach((xl, li) => {
+
+      for (let f = 0; f <= bayCount; f++) {
+
+        const fz = rackZ0 - f * bayW2;
+
+        [-0.55, 0.55].forEach(off => {
+
+          dummy.position.set(xl + off, 2.6, fz);
+
+          dummy.rotation.set(0, 0, 0);
+
+          dummy.updateMatrix();
+
+          postInst.setMatrixAt(postIdx++, dummy.matrix);
+
+        });
+
+      }
+
+      for (let b = 0; b < bayCount; b++) {
+
+        const zc = rackZ0 - b * bayW2 - bayW2 / 2;
+
+        levels.forEach((lv, lvi) => {
+
+          [-0.55, 0.55].forEach(off => {
+
+            dummy.position.set(xl + off, lv, zc);
+
+            dummy.updateMatrix();
+
+            if (beamIdx < beamInst.count) beamInst.setMatrixAt(beamIdx++, dummy.matrix);
+
+          });
+
+          for (let s = 0; s < 2; s++) {
+
+            const seed = (li * 31 + b * 7 + lvi * 5 + s * 11) % 10;
+
+            if (seed >= 8) continue;
+
+            const sz = zc + (s === 0 ? -0.68 : 0.68);
+
+            dummy.position.set(xl, lv + 0.13, sz);
+
+            dummy.updateMatrix();
+
+            if (palIdx < palletInst.count) palletInst.setMatrixAt(palIdx++, dummy.matrix);
+
+            dummy.position.set(xl, lv + 0.19 + 0.5, sz);
+
+            dummy.rotation.y = ((seed % 3) - 1) * 0.03;
+
+            dummy.updateMatrix();
+
+            const pick = seed % 3;
+
+            if (pick === 0 && wIdx < goodsWInst.count) goodsWInst.setMatrixAt(wIdx++, dummy.matrix);
+
+            else if (pick === 1 && bIdx < goodsBInst.count) goodsBInst.setMatrixAt(bIdx++, dummy.matrix);
+
+            else if (dIdx < goodsDInst.count) goodsDInst.setMatrixAt(dIdx++, dummy.matrix);
+
+            dummy.rotation.y = 0;
+
+          }
+
+        });
+
+      }
+
+    });
+
+    postInst.count = postIdx;
+
+    beamInst.count = beamIdx;
+
+    palletInst.count = palIdx;
+
+    goodsWInst.count = wIdx;
+
+    goodsBInst.count = bIdx;
+
+    goodsDInst.count = dIdx;
+
+    [postInst, beamInst, palletInst, goodsWInst, goodsBInst, goodsDInst].forEach(im => {
+
+      im.castShadow = true;
+
+      deepInteriorGroup.add(im);
+
+    });
+
+    // گاردریل واک‌وی انبار
+
+    for (let rz = -118; rz >= -158; rz -= 4) {
+
+      const rp = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.85, 0.08), lineYellowMat);
+
+      rp.position.set(21.0, 0.42, rz);
+
+      deepInteriorGroup.add(rp);
+
+    }
+
+    deepInteriorGroup.add((function () {
+
+      const rail1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, 40), lineYellowMat);
+
+      rail1.position.set(21.0, 0.62, -138);
+
+      const rail2 = rail1.clone();
+
+      rail2.position.y = 0.32;
+
+      const g = new THREE.Group();
+
+      g.add(rail1, rail2);
+
+      return g;
+
+    })());
+
+    // لیفتراک
+
+    function createForklift() {
+
+      const fk = new THREE.Group();
+
+      const bodyY = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.45 });
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.85, 1.9), bodyY);
+
+      body.position.y = 0.6;
+
+      fk.add(body);
+
+      const cw = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.65, 0.55), darkSteelMat);
+
+      cw.position.set(0, 0.55, -1.15);
+
+      fk.add(cw);
+
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.07, 1.05), darkSteelMat);
+
+      roof.position.set(0, 2.0, 0.15);
+
+      fk.add(roof);
+
+      [[-0.48, -0.32], [0.48, -0.32], [-0.48, 0.62], [0.48, 0.62]].forEach(pt => {
+
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.0, 0.07), darkSteelMat);
+
+        post.position.set(pt[0], 1.5, pt[1]);
+
+        fk.add(post);
+
+      });
+
+      const mastL = new THREE.Mesh(new THREE.BoxGeometry(0.09, 2.2, 0.09), darkSteelMat);
+
+      mastL.position.set(-0.38, 1.15, 0.98);
+
+      const mastR = mastL.clone();
+
+      mastR.position.x = 0.38;
+
+      fk.add(mastL, mastR);
+
+      const forkA = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.06, 1.05), silverMat);
+
+      forkA.position.set(-0.3, 0.14, 1.6);
+
+      const forkB = forkA.clone();
+
+      forkB.position.x = 0.3;
+
+      fk.add(forkA, forkB);
+
+      const wheelGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.2, 12);
+
+      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111418, roughness: 0.8 });
+
+      [[-0.62, 0.55], [0.62, 0.55], [-0.62, -0.75], [0.62, -0.75]].forEach(pt => {
+
+        const wh = new THREE.Mesh(wheelGeo, wheelMat);
+
+        wh.rotation.z = Math.PI / 2;
+
+        wh.position.set(pt[0], 0.28, pt[1]);
+
+        fk.add(wh);
+
+      });
+
+      const beacon = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.12, 0.16), extingMat);
+
+      beacon.position.set(0, 2.1, 0.15);
+
+      fk.add(beacon);
+
+      return fk;
+
+    }
+
+    const forklift = createForklift();
+
+    forklift.position.set(10.7, 0, -131);
+
+    forklift.rotation.y = 0.55;
+
+    deepInteriorGroup.add(forklift);
+
+    // لاین‌های استیجینگ جلوی اسکله
+
+    function stagingRect(cx, cz, w, l) {
+
+      const g = new THREE.Group();
+
+      const t = 0.09;
+
+      const a = flatPlane(w, t, lineYellowMat, 0, 0.07, -l / 2);
+
+      const b2 = flatPlane(w, t, lineYellowMat, 0, 0.07, l / 2);
+
+      const c2 = flatPlane(t, l, lineYellowMat, -w / 2, 0.07, 0);
+
+      const d2 = flatPlane(t, l, lineYellowMat, w / 2, 0.07, 0);
+
+      g.add(a, b2, c2, d2);
+
+      g.position.set(cx, 0, cz);
+
+      return g;
+
+    }
+
+    deepInteriorGroup.add(stagingRect(10.3, -161.5, 3.6, 2.6));
+
+    deepInteriorGroup.add(stagingRect(14.0, -161.5, 3.0, 2.6));
+
+    [[10.3, -161.5], [14.0, -161.5]].forEach(pt => {
+
+      const pl = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.14, 1.15), palletMat);
+
+      pl.position.set(pt[0], 0.07, pt[1]);
+
+      deepInteriorGroup.add(pl);
+
+      const gd = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.95, 1.0), goodsWhiteMat);
+
+      gd.position.set(pt[0], 0.62, pt[1]);
+
+      deepInteriorGroup.add(gd);
+
+    });
+
+    // دیوارهای عمق سوله + دیوار انتهایی
+
+    const deepWallL1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6.6, 106), concreteWallMat);
+
+    deepWallL1.position.set(0, 3.3, -137);
+
+    const deepWallL2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5.8, 106), facadeBlueMat);
+
+    deepWallL2.position.set(0, 9.3, -137);
+
+    const deepWallR1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6.6, 106), concreteWallMat);
+
+    deepWallR1.position.set(23.5, 3.3, -137);
+
+    const deepWallR2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5.8, 106), facadeBlueMat);
+
+    deepWallR2.position.set(23.5, 9.3, -137);
+
+    deepInteriorGroup.add(deepWallL1, deepWallL2, deepWallR1, deepWallR2);
+
+    const endWallL = new THREE.Mesh(new THREE.BoxGeometry(23.5, 6.6, 0.8), concreteWallMat);
+
+    endWallL.position.set(bay3LocalX, 3.3, -190);
+
+    const endWallU = new THREE.Mesh(new THREE.BoxGeometry(23.5, 5.8, 0.8), facadeBlueMat);
+
+    endWallU.position.set(bay3LocalX, 9.3, -190);
+
+    const endGate = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 5.0), darkOpeningMat);
+
+    endGate.position.set(bay3LocalX + 3, 2.6, -189.55);
+
+    deepInteriorGroup.add(endWallL, endWallU, endGate);
+
+    // درب‌های اسکله + بولارد
+
+    [-166, -171.5].forEach(dz => {
+
+      const dockDoor = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 4.0), lightDoorMat);
+
+      dockDoor.rotation.y = -Math.PI / 2;
+
+      dockDoor.position.set(23.08, 2.0, dz);
+
+      deepInteriorGroup.add(dockDoor);
+
+      const leveler = flatPlane(2.9, 1.1, silverMat, 22.2, 0.055, dz);
+
+      deepInteriorGroup.add(leveler);
+
+      [[dz - 1.9], [dz + 1.9]].forEach(bz => {
+
+        const bol = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.9, 10), bollardMat);
+
+        bol.position.set(22.7, 0.45, bz[0]);
+
+        deepInteriorGroup.add(bol);
+
+      });
+
+    });
+
+    // نورگیر روی سقف عمق
+
+    for (let sz = -90; sz >= -180; sz -= 10) {
+
+      const skyD = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.1, 5.2), skylightMat);
+
+      skyD.position.set(bay3LocalX, 16.05, sz);
+
+      deepInteriorGroup.add(skyD);
+
+    }
+
+    // =========================================================
+
+    // ۱۱. روشنایی LED و تابلوهای معلق زون‌ها
+
+    // =========================================================
+
+    const ledXs = [6.2, 17.3];
+
+    const ledCount = ledXs.length * 21;
+
+    const ledInst = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.42, 0.1, 12), ledDiscMat, ledCount);
+
+    const rodInst = new THREE.InstancedMesh(new THREE.BoxGeometry(0.05, 2.8, 0.05), darkSteelMat, ledCount);
+
+    let ledIdx = 0;
+
+    ledXs.forEach(lx => {
+
+      for (let lz = -8; lz >= -168; lz -= 8) {
+
+        dummy.rotation.set(0, 0, 0);
+
+        dummy.position.set(lx, 8.6, lz);
+
+        dummy.updateMatrix();
+
+        ledInst.setMatrixAt(ledIdx, dummy.matrix);
+
+        dummy.position.set(lx, 10.0, lz);
+
+        dummy.updateMatrix();
+
+        rodInst.setMatrixAt(ledIdx, dummy.matrix);
+
+        ledIdx++;
+
+      }
+
+    });
+
+    deepInteriorGroup.add(ledInst, rodInst);
+
+    const pl1 = new THREE.PointLight(0xf5f8ff, 0.75, 42);
+
+    pl1.position.set(bay3LocalX, 8.0, -20);
+
+    fourHallsMasterGroup.add(pl1);
+
+    const pl2 = new THREE.PointLight(0xf5f8ff, 0.75, 42);
+
+    pl2.position.set(bay3LocalX, 8.0, -52);
+
+    fourHallsMasterGroup.add(pl2);
+
+    const pl3 = new THREE.PointLight(0xfff3e0, 0.85, 42);
+
+    pl3.position.set(bay3LocalX, 7.6, -86);
+
+    deepInteriorGroup.add(pl3);
+
+    const pl4 = new THREE.PointLight(0xf5f8ff, 0.8, 45);
+
+    pl4.position.set(bay3LocalX, 8.0, -130);
+
+    deepInteriorGroup.add(pl4);
+
+    const pl5 = new THREE.PointLight(0xf5f8ff, 0.75, 42);
+
+    pl5.position.set(bay3LocalX, 8.0, -170);
+
+    deepInteriorGroup.add(pl5);
+
+    function hangSign(fa, en, color, z, parent) {
+
+      const g = new THREE.Group();
+
+      const sign = new THREE.Mesh(
+
+        new THREE.PlaneGeometry(5.4, 1.35),
+
+        new THREE.MeshBasicMaterial({ map: createSignTex(fa, en, color), side: THREE.DoubleSide })
+
+      );
+
+      sign.position.y = 7.4;
+
+      g.add(sign);
+
+      [-2.2, 2.2].forEach(rx => {
+
+        const rod = new THREE.Mesh(new THREE.BoxGeometry(0.05, 3.4, 0.05), darkSteelMat);
+
+        rod.position.set(rx, 9.6, 0);
+
+        g.add(rod);
+
+      });
+
+      g.position.set(bay3LocalX, 0, z);
+
+      parent.add(g);
+
+    }
+
+    hangSign('۱- واحد تولید تزریق', 'PRODUCTION', '#3b82f6', -10, fourHallsMasterGroup);
+
+    hangSign('۲- فروشگاه رنگ', 'PAINT SHOP', '#f97316', -61.5, fourHallsMasterGroup);
+
+    hangSign('۳- انبار پالتی', 'WAREHOUSE', '#14b8a6', -124, deepInteriorGroup);
+
+    hangSign('۴- بارگیری و اکسپدیشن', 'SHIPPING', '#22c55e', -168, deepInteriorGroup);
+
+    // =========================================================
+
+    // ۱۱.۵ نقاله زاویه‌ها (بازنمایی SVG)
+
+    // =========================================================
+
+    const svgEl = document.getElementById('protractor-overlay');
+
+    const toggleBtn = document.getElementById('toggleProtractor');
+
+    let showProtractor = true;
+
+    toggleBtn.addEventListener('click', () => {
+
+      showProtractor = !showProtractor;
+
+      toggleBtn.classList.toggle('on', showProtractor);
+
+      svgEl.style.display = showProtractor ? 'block' : 'none';
+
+    });
+
+    function renderProtractorSVG() {
+
+      if (!showProtractor) return;
+
+      const projected = PROTRACTOR_ORIGIN.clone().project(camera);
+
+      const cx = (projected.x * 0.5 + 0.5) * window.innerWidth;
+
+      const cy = (-projected.y * 0.5 + 0.5) * window.innerHeight;
+
+      const radius = Math.min(window.innerWidth, window.innerHeight) * 0.42;
+
+      const angles = [
+
+        { deg: 30,  color: '#38bdf8', label: '۳۰° خیابان اول' },
+
+        { deg: 50,  color: '#60a5fa', label: '۵۰° ساختمان‌های بهم پیوسته' },
+
+        { deg: 130, color: '#facc15', label: '۱۳۰° چهار سوله عریض' },
+
+        { deg: 150, color: '#4ade80', label: '۱۵۰° ساختمان راست' },
+
+        { deg: 165, color: '#f472b6', label: '۱۶۵° خیابان دوم' }
+
+      ];
+
+      let html = `
+
+        <path d="M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}"
+
+              fill="rgba(8, 22, 48, 0.16)" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-dasharray="6 4" />
+
+        <line x1="${cx - radius}" y1="${cy}" x2="${cx + radius}" y2="${cy}" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+
+        <circle cx="${cx}" cy="${cy}" r="6" fill="#00e1ff" stroke="#fff" stroke-width="2" />
+
+      `;
+
+      for (let d = 0; d <= 180; d += 10) {
+
+        const r = (d * Math.PI) / 180;
+
+        const x1 = cx - Math.cos(r) * (radius - 8);
+
+        const y1 = cy - Math.sin(r) * (radius - 8);
+
+        const x2 = cx - Math.cos(r) * radius;
+
+        const y2 = cy - Math.sin(r) * radius;
+
+        html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" />`;
+
+      }
+
+      angles.forEach((item) => {
+
+        const r = (item.deg * Math.PI) / 180;
+
+        const rayLen = radius * 1.35;
+
+        const xEnd = cx - Math.cos(r) * rayLen;
+
+        const yEnd = cy - Math.sin(r) * rayLen;
+
+        const lx = cx - Math.cos(r) * (radius * 0.92);
+
+        const ly = cy - Math.sin(r) * (radius * 0.92);
+
+        html += `
+
+          <line x1="${cx}" y1="${cy}" x2="${xEnd}" y2="${yEnd}" stroke="${item.color}" stroke-width="2.5" stroke-dasharray="8 4" />
+
+          <circle cx="${lx}" cy="${ly}" r="4" fill="${item.color}" />
+
+          <g transform="translate(${lx}, ${ly - 10})">
+
+            <rect x="-82" y="-22" width="164" height="24" rx="12" fill="rgba(7, 18, 38, 0.88)" stroke="${item.color}" stroke-width="1.2" />
+
+            <text x="0" y="-6" fill="#fff" font-size="11.2" font-weight="bold" text-anchor="middle">${item.label}</text>
+
+          </g>
+
+        `;
+
+      });
+
+      svgEl.innerHTML = html;
+
+    }
+
+    // =========================================================
+
+    // ۱۲. HUD، تایم‌لاین دوربین و حلقه رندر
+
+    // =========================================================
+
+    fourHallsMasterGroup.updateMatrixWorld(true);
+
+    const interiorLight = new THREE.PointLight(0xe8f1ff, 1.1, 90);
+
+    interiorLight.position.set(bay3LocalX, 9.0, -40);
+
+    fourHallsMasterGroup.add(interiorLight);
+
+    const aerialWorldPos = new THREE.Vector3(6, 98, 170);
+
+    const aerialWorldLook = new THREE.Vector3(2, 0, 8);
+
+    const startLocalPos = fourHallsMasterGroup.worldToLocal(aerialWorldPos.clone());
+
+    const startLocalLook = fourHallsMasterGroup.worldToLocal(aerialWorldLook.clone());
+
+    const camLocal = {
+
+      px: startLocalPos.x, py: startLocalPos.y, pz: startLocalPos.z,
+
+      lx: startLocalLook.x, ly: startLocalLook.y, lz: startLocalLook.z
+
+    };
+
+    const stepData = [
+
+      {
+
+        tag: 'بخش اول • نمای کلی سایت | AERIAL VIEW',
+
+        title: 'کارخانه AKK — طرح بازطراحی داخلی',
+
+        desc: 'چیدمان جدید با جریان خطی یک‌طرفه «تزریق ← رنگ ← انبار»، راهروی اصلی ۶ متری، واک‌وی سبز جدای عابر پیاده، روشنایی LED و نورگیر سقفی. چهار سوله ۲۳.۵ متری در راستای ۱۳۰ درجه حفظ شده است.',
+
+        chips: ['جریان خطی یک‌طرفه', 'عابر جدا از لیفتراک', 'LED + نورگیر سقفی']
+
+      },
+
+      {
+
+        tag: 'بخش دوم • واحد تولید | MOLDING',
+
+        title: 'سلول تزریق پلاستیک — ۸ دستگاه با نقاله مرکزی',
+
+        desc: 'دو ردیف دستگاه تزریق روبه‌رو با بازوی رباتیک برداشت، حفاظ ایمنی زرد و درب شیشه‌ای، نوار نقاله مرکزی انتقال سپر به رنگ، ایستگاه کنترل کیفیت و استقرار مواد اولیه در ورودی سالن.',
+
+        chips: ['بازوی رباتیک برداشت', 'حفاظ ایمنی دور دستگاه', 'ایستگاه QC']
+
+      },
+
+      {
+
+        tag: 'بخش سوم • فروشگاه رنگ | PAINT SHOP',
+
+        title: 'اتاق رنگ ایزوله با کف مشبک و کانوایر آویز',
+
+        desc: 'اتاقک کاملاً بسته (ورق پایین + شیشه بالا با قاب آبی)، کف مشبک بالاکشیده برای مکش تحت کف، سه کابین مجهز به هود و کانال تخلیه به سقف، کانوایر زنجیری آویز، زون فلش‌آف و خروجی مستقل به انبار.',
+
+        chips: ['کف مشبک + مکش تحت کف', 'کانوایر آویز زنجیری', 'فلش‌آف و خروجی جدا']
+
+      },
+
+      {
+
+        tag: 'بخش چهارم • انبار و بارگیری | WAREHOUSE',
+
+        title: 'انبار پالتی رک‌دار و اسکله اکسپدیشن',
+
+        desc: 'رک‌های پالتی سه‌طبقه در دو طرف با کالای سفید و کرم، لاین دوطرفه لیفتراک، گاردریل جداکننده واک‌وی عابر، لاین‌های استیجینگ و دو درب اسکله با بولارد محافظ.',
+
+        chips: ['رک ۳ طبقه پالتی', 'لاین استیجینگ', 'درب اسکله + بولارد']
+
+      }
+
+    ];
+
+    const stepTagEl = document.getElementById('stepTag');
+
+    const stepTitleEl = document.getElementById('stepTitle');
+
+    const stepDescEl = document.getElementById('stepDesc');
+
+    const stepChipsEl = document.getElementById('stepChips');
+
+    const skyHazeEl = document.getElementById('skyHaze');
+
+    const zoneLegendEl = document.getElementById('zoneLegend');
+
+    const progressBarEl = document.getElementById('progressBar');
+
+    const scrollHintEl = document.getElementById('scrollHint');
+
+    const hudBtns = document.querySelectorAll('.hud-btn[data-target]');
+
+    let currentStepIdx = -1;
+
+    function updateHUD(idx) {
+
+      if (idx === currentStepIdx) return;
+
+      currentStepIdx = idx;
+
+      stepTagEl.textContent = stepData[idx].tag;
+
+      stepTitleEl.textContent = stepData[idx].title;
+
+      stepDescEl.textContent = stepData[idx].desc;
+
+      stepChipsEl.innerHTML = '';
+
+      stepData[idx].chips.forEach(cTxt => {
+
+        const sp = document.createElement('span');
+
+        sp.className = 'chip';
+
+        sp.textContent = '\u2713 ' + cTxt;
+
+        stepChipsEl.appendChild(sp);
+
+      });
+
+      hudBtns.forEach((btn, i) => btn.classList.toggle('active', i === idx));
+
+    }
+
+    updateHUD(0);
+
+    const tl = gsap.timeline({
+
+      scrollTrigger: {
+
+        trigger: '.scroll-spacer',
+
+        start: 'top top',
+
+        end: 'bottom bottom',
+
+        scrub: 1.2,
+
+        onUpdate: (self) => {
+
+          const p = self.progress;
+
+          progressBarEl.style.width = (p * 100) + '%';
+
+          scrollHintEl.style.opacity = p > 0.04 ? '0' : '1';
+
+          skyHazeEl.style.opacity = p < 0.18 ? String(1 - p * 5) : '0';
+
+          svgEl.style.opacity = p < 0.08 ? String(Math.max(0, 1 - p * 12)) : '0';
+
+          deepInteriorGroup.visible = p >= 0.22;
+
+          backOrchardGroup.visible = p < 0.22;
+
+          zoneLegendEl.style.opacity = p > 0.12 ? '1' : '0';
+
+          if (p < 0.24) {
+
+            scene.background.setHex(0xcbd5e1);
+
+            scene.fog.color.setHex(0xd2cbc0);
+
+            updateHUD(0);
+
+          } else if (p < 0.52) {
+
+            scene.background.setHex(0x1e293b);
+
+            scene.fog.color.setHex(0x1e293b);
+
+            updateHUD(1);
+
+          } else if (p < 0.80) {
+
+            scene.background.setHex(0x1e293b);
+
+            scene.fog.color.setHex(0x1e293b);
+
+            updateHUD(2);
+
+          } else {
+
+            scene.background.setHex(0x091326);
+
+            scene.fog.color.setHex(0x091326);
+
+            updateHUD(3);
+
+          }
+
+        }
+
+      }
+
+    });
+
+    tl.to(camLocal, {
+
+      px: bay3LocalX, py: 4.0, pz: 16,
+
+      lx: bay3LocalX, ly: 3.0, lz: -24,
+
+      duration: 2.8,
+
+      ease: 'power2.inOut'
+
+    })
+
+    .to(camLocal, {
+
+      px: bay3LocalX - 0.6, py: 3.8, pz: -44,
+
+      lx: bay3LocalX,       ly: 2.9, lz: -70,
+
+      duration: 3.2,
+
+      ease: 'none'
+
+    })
+
+    .to(camLocal, {
+
+      px: bay3LocalX, py: 3.55, pz: -88,
+
+      lx: bay3LocalX, ly: 2.8,  lz: -116,
+
+      duration: 3.2,
+
+      ease: 'none'
+
+    })
+
+    .to(camLocal, {
+
+      px: bay3LocalX - 0.4, py: 3.4, pz: -140,
+
+      lx: bay3LocalX,       ly: 2.7, lz: -178,
+
+      duration: 3.0,
+
+      ease: 'power1.out'
+
+    });
+
+    hudBtns.forEach((btn) => {
+
+      btn.addEventListener('click', () => {
+
+        const target = parseFloat(btn.getAttribute('data-target'));
+
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+
+        window.scrollTo({ top: target * maxScroll, behavior: 'smooth' });
+
+      });
+
+    });
+
+    let mouseX = 0, mouseY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+
+    });
+
+    let lastT = performance.now();
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+
+      const nowT = performance.now();
+
+      const dt = Math.min((nowT - lastT) / 1000, 0.05);
+
+      lastT = nowT;
+
+      interiorLight.position.z = camLocal.pz - 12;
+
+      flowBumpers.forEach(b => {
+
+        b.position.z -= dt * 1.7;
+
+        if (b.position.z < -60) b.position.z = -9;
+
+      });
+
+      paintHooks.forEach(h => {
+
+        h.position.z -= dt * 0.9;
+
+        if (h.position.z < -105.5) h.position.z = -66.5;
+
+      });
+
+      const worldPos = fourHallsMasterGroup.localToWorld(
+
+        new THREE.Vector3(camLocal.px, camLocal.py, camLocal.pz)
+
+      );
+
+      const worldLook = fourHallsMasterGroup.localToWorld(
+
+        new THREE.Vector3(camLocal.lx + mouseX * 1.4, camLocal.ly - mouseY * 0.9, camLocal.lz)
+
+      );
+
+      camera.position.copy(worldPos);
+
+      camera.lookAt(worldLook);
+
+      renderer.render(scene, camera);
+
+      renderProtractorSVG();
+
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+    });
+
+    }
+
+    // شروع صحنه پس از آماده شدن فونت فارسی (برای متن‌های کانواس)
+
+    if (document.fonts && document.fonts.ready) {
+
+      Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(boot);
+
+    } else {
+
+      boot();
+
+    }
+
+  </script>
+
+</body>
+
+</html>

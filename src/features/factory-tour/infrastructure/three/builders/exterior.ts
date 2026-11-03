@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { getProtractorDir, getProtractorPoint, PROTRACTOR_ORIGIN } from '../../../domain/protractor';
-import { createAkkLogoTex, createFieldTex, createRoadTex } from '../textures';
+import { createFieldTex, createRoadTex } from '../textures';
 import { box, createGabledRoof, flatPlane, mesh, placed, toVector3 } from '../primitives';
 import { BuildContext } from './context';
 
@@ -27,13 +27,9 @@ export function buildExterior(ctx: BuildContext) {
   courtyard.receiveShadow = true;
   exterior.add(courtyard);
 
+  exterior.add(buildStreet(ctx));
   exterior.add(buildFirstStreetSide(ctx));
   exterior.add(buildSecondStreetSide(ctx));
-
-  const logo = flatPlane(24, 12, new THREE.MeshBasicMaterial({ map: createAkkLogoTex(), transparent: true }), 0, 0.2, 0);
-  const logoPoint = getProtractorPoint(14, 62, 0);
-  logo.position.set(logoPoint.x, 0.2, logoPoint.z);
-  exterior.add(logo);
 
   [55, 72, 90, 108, 125].forEach((deg, i) => {
     const tree = parts.tree(1.15, i % 2 === 0);
@@ -48,6 +44,70 @@ export function buildExterior(ctx: BuildContext) {
   }
 }
 
+const STREET_HALF_WIDTH = 7;
+const ROAD_TILE_LENGTH = 12.5;
+/** How far down each street the bend begins; the centreline radius at the apex is ≈19m. */
+const CORNER_CUT = 14;
+
+/** Centreline running out along the 165° street, round the corner at the origin and up the 30° street. */
+function streetCentreline(secondStreetEnd: number, firstStreetEnd: number) {
+  const along = (deg: number, dist: number) => toVector3(getProtractorPoint(deg, dist));
+  const path = new THREE.CurvePath<THREE.Vector3>();
+  path.add(new THREE.LineCurve3(along(165, secondStreetEnd), along(165, CORNER_CUT)));
+  path.add(new THREE.QuadraticBezierCurve3(along(165, CORNER_CUT), toVector3(PROTRACTOR_ORIGIN), along(30, CORNER_CUT)));
+  path.add(new THREE.LineCurve3(along(30, CORNER_CUT), along(30, firstStreetEnd)));
+  return path.getSpacedPoints(Math.ceil(path.getLength() / 0.75));
+}
+
+/**
+ * Strip swept along `pts` between two cross-section points given as [offset, height]; positive offsets lie on
+ * the inner side of the bend. The strip faces up when the first offset is smaller, or toward the road for walls
+ * listed bottom-to-top. V runs along the path in units of `tile` metres.
+ */
+function sweptStrip(pts: THREE.Vector3[], a: [number, number], b: [number, number], tile = 1) {
+  const positions: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  let dist = 0;
+  pts.forEach((p, i) => {
+    if (i > 0) dist += p.distanceTo(pts[i - 1]);
+    const t = pts[Math.min(i + 1, pts.length - 1)].clone().sub(pts[Math.max(i - 1, 0)]).normalize();
+    for (const [offset, y] of [a, b]) positions.push(p.x - t.z * offset, p.y + y, p.z + t.x * offset);
+    uvs.push(0, dist / tile, 1, dist / tile);
+    if (i > 0) {
+      const k = i * 2;
+      indices.push(k - 2, k - 1, k, k - 1, k + 1, k);
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Both streets as one continuous road, with the kerb along the factory side following the bend. */
+function buildStreet({ mats }: BuildContext) {
+  const street = new THREE.Group();
+
+  const road = new THREE.Mesh(
+    sweptStrip(streetCentreline(162.5, 197), [-STREET_HALF_WIDTH, 0.02], [STREET_HALF_WIDTH, 0.02], ROAD_TILE_LENGTH),
+    new THREE.MeshStandardMaterial({ map: createRoadTex(1), roughness: 0.82 }),
+  );
+  road.receiveShadow = true;
+  street.add(road);
+
+  const kerbPts = streetCentreline(157.5, 187.5);
+  const [k0, k1, kh] = [7.0, 7.4, 0.25];
+  street.add(
+    new THREE.Mesh(sweptStrip(kerbPts, [k0, kh], [k1, kh]), mats.curb),
+    new THREE.Mesh(sweptStrip(kerbPts, [k0, 0], [k0, kh]), mats.curb),
+    new THREE.Mesh(sweptStrip(kerbPts, [k1, kh], [k1, 0]), mats.curb),
+  );
+  return street;
+}
+
 function sideGroup(deg: number) {
   const g = new THREE.Group();
   g.position.copy(toVector3(PROTRACTOR_ORIGIN));
@@ -59,10 +119,6 @@ function sideGroup(deg: number) {
 function buildFirstStreetSide({ mats, parts }: BuildContext) {
   const side = sideGroup(30);
 
-  const street = flatPlane(14, 210, new THREE.MeshStandardMaterial({ map: createRoadTex(17), roughness: 0.82 }), 0, 0.02, -92);
-  street.receiveShadow = true;
-  side.add(street);
-  side.add(box(0.4, 0.25, 185, mats.curb, 7.2, 0.12, -95));
   side.add(flatPlane(130, 210, new THREE.MeshStandardMaterial({ map: createFieldTex(), roughness: 0.95 }), -72, 0.01, -92));
 
   let i = 0;
@@ -121,10 +177,6 @@ function buildFirstStreetSide({ mats, parts }: BuildContext) {
 function buildSecondStreetSide({ mats, parts }: BuildContext) {
   const side = sideGroup(165);
 
-  const street = flatPlane(14, 175, new THREE.MeshStandardMaterial({ map: createRoadTex(14), roughness: 0.82 }), 0, 0.03, -75);
-  street.receiveShadow = true;
-  side.add(street);
-  side.add(box(0.4, 0.25, 155, mats.curb, -7.2, 0.12, -80));
   side.add(flatPlane(95, 175, new THREE.MeshStandardMaterial({ map: createFieldTex(), roughness: 0.95 }), 54.5, 0.01, -75));
 
   for (let z = -20, i = 0; z >= -150; z -= 6, i++) {

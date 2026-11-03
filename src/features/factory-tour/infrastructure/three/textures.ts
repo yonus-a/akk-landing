@@ -386,21 +386,3 @@ export function createSafetyBoardTex() {
   });
   return new THREE.CanvasTexture(canvas);
 }
-
-export function createAkkLogoTex() {
-  const { canvas, ctx } = makeCanvas(512, 256);
-  ctx.fillStyle = '#1d3fe0';
-  ctx.strokeStyle = '#0b1f8f';
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(35, 132);
-  ctx.quadraticCurveTo(215, 12, 465, 65);
-  ctx.lineTo(443, 100);
-  ctx.quadraticCurveTo(225, 52, 65, 152);
-  ctx.closePath();
-  ctx.fill(); ctx.stroke();
-  ctx.font = 'italic 900 126px sans-serif';
-  ctx.fillText('AKK', 62, 224);
-  ctx.strokeText('AKK', 62, 224);
-  return new THREE.CanvasTexture(canvas);
-}

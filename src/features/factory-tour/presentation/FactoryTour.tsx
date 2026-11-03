@@ -8,7 +8,7 @@ import { FactoryCanvas } from './components/FactoryCanvas';
 import { HudNav } from './components/HudNav';
 import { InfoCard } from './components/InfoCard';
 import { ProtractorOverlay } from './components/ProtractorOverlay';
-import { ProgressBar, ScrollHint, SkyHaze } from './components/ScrollOverlays';
+import { ScrollHint, SkyHaze } from './components/ScrollOverlays';
 import { ZoneLegend } from './components/ZoneLegend';
 import './factoryTour.css';
 
@@ -61,7 +61,6 @@ export const FactoryTour: React.FC<FactoryTourProps> = ({
   return (
     <div className={`factory-tour${compact ? ' is-compact' : ''} ${className}`} style={rootStyle} dir={lang === 'fa' ? 'rtl' : 'ltr'}>
       <FactoryCanvas onSceneChange={setScene} />
-      <ProgressBar progress={progress} />
       <SkyHaze opacity={overlays.skyHaze} />
       {showProtractor && (
         <ProtractorOverlay lang={lang} scene={scene} enabled={protractorOn} opacity={hudVisible ? overlays.protractor : 0} />
