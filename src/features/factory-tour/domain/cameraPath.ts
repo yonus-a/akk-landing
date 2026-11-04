@@ -18,8 +18,8 @@ export interface CameraKeyframe {
 }
 
 /** Opening aerial shot, in world space (converted to hall-local space by the scene). */
-export const AERIAL_WORLD_POSITION = vec3(6, 98, 170);
-export const AERIAL_WORLD_LOOK = vec3(2, 0, 8);
+export const AERIAL_WORLD_POSITION = vec3(54, 94, 158);
+export const AERIAL_WORLD_LOOK = vec3(48, 0, -2);
 
 const X = BAY3_LOCAL_X;
 

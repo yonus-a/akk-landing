@@ -27,7 +27,7 @@ export const AboutIntro: React.FC<AboutIntroProps> = ({
   const spineRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const percentRef = useRef<HTMLSpanElement>(null);
   const [reachedCount, setReachedCount] = useState(0);
 
   // خط پیشرفت با عبور تایم‌لاین از «خط مطالعه» (نسبتی از ارتفاع صفحه) پر می‌شود و هر نقطه با رسیدن خط فعال می‌شود
@@ -42,7 +42,7 @@ export const AboutIntro: React.FC<AboutIntroProps> = ({
       const progress = rect.height > 0 ? Math.min(1, Math.max(0, (readingLine - rect.top) / rect.height)) : 0;
 
       if (fillRef.current) fillRef.current.style.transform = `scaleY(${progress})`;
-      setScrollProgress(Math.round(progress * 100));
+      if (percentRef.current) percentRef.current.textContent = `${Math.round(progress * 100)}%`;
       setReachedCount(
         nodeRefs.current.filter((node) => {
           if (!node) return false;
@@ -66,16 +66,16 @@ export const AboutIntro: React.FC<AboutIntroProps> = ({
   }, []);
 
   return (
-    <section id="about" className="py-20 lg:py-28 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative border-b border-slate-200 overflow-hidden">
+    <section id="about" className="py-12 lg:py-16 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative border-b border-slate-200 overflow-hidden">
       
       {/* دکوراسیون پس‌زمینه محو و مدرن */}
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none -translate-x-1/2" />
-      <div className="absolute bottom-10 right-0 w-80 h-80 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none translate-x-1/3" />
+      <div className="absolute top-1/4 left-0 w-[32rem] h-[32rem] bg-radial-[closest-side] from-blue-100/60 to-transparent pointer-events-none -translate-x-1/2" />
+      <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-radial-[closest-side] from-indigo-100/50 to-transparent pointer-events-none translate-x-1/3" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-14">
+        <div className="max-w-3xl mb-8 lg:mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-xs font-bold text-blue-700 uppercase tracking-wider mb-3 shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
             <span>{kicker}</span>
@@ -161,8 +161,8 @@ export const AboutIntro: React.FC<AboutIntroProps> = ({
                   <Calendar className="w-4 h-4 text-blue-700" />
                   <span>{lang === 'fa' ? 'مسیر تحول و رشد سازمانی' : 'Corporate Evolution & Milestones'}</span>
                 </div>
-                <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-mono">
-                  {scrollProgress}%
+                <span ref={percentRef} className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-mono">
+                  0%
                 </span>
               </div>
 

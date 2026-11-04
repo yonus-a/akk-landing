@@ -5,17 +5,142 @@ import {
   CheckCircle2,
   ChevronUp,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   X,
   Sparkles,
-  Mouse,
 } from 'lucide-react';
 import { Language, FactoryGalleryItem } from '../types';
-import { useStepScroll } from '../hooks/useStepScroll';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const DESKTOP_QUERY = '(min-width: 1024px)';
+const AUTOPLAY_MS = 5000;
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/** Phone gallery: native swipe with scroll-snap; the next slide peeks in to invite the gesture. */
+const MobileCarousel: React.FC<{
+  items: FactoryGalleryItem[];
+  isRTL: boolean;
+  activeIndex: number;
+  onActiveChange: (index: number) => void;
+  onOpen: () => void;
+}> = ({ items, isRTL, activeIndex, onActiveChange, onOpen }) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<(HTMLElement | null)[]>([]);
+
+  const slideStep = () => {
+    const [first, second] = slideRefs.current;
+    if (!first) return 1;
+    return second ? Math.abs(second.offsetLeft - first.offsetLeft) : first.offsetWidth;
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      // RTL tracks report negative scrollLeft.
+      const scrolled = Math.abs(track.scrollLeft);
+      const atEnd = scrolled >= track.scrollWidth - track.clientWidth - 4;
+      const index = atEnd ? items.length - 1 : Math.round(scrolled / slideStep());
+      onActiveChange(Math.min(items.length - 1, Math.max(0, index)));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    track.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      track.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [items.length, onActiveChange]);
+
+  const goTo = (index: number) => {
+    trackRef.current?.scrollTo({ left: (isRTL ? -1 : 1) * index * slideStep(), behavior: 'smooth' });
+  };
+
+  return (
+    <div>
+      <div
+        ref={trackRef}
+        className="-mx-4 sm:-mx-6 px-4 sm:px-6 scroll-px-4 sm:scroll-px-6 flex gap-3 overflow-x-auto snap-x snap-mandatory overscroll-x-contain scrollbar-none"
+      >
+        {items.map((item, idx) => (
+          <article
+            key={item.id}
+            ref={(el) => {
+              slideRefs.current[idx] = el;
+            }}
+            aria-roledescription="slide"
+            aria-label={`${idx + 1} / ${items.length}`}
+            className="relative shrink-0 w-[86%] sm:w-[60%] aspect-[4/5] snap-start snap-always rounded-3xl overflow-hidden bg-slate-900 border border-white/10"
+          >
+            <img
+              src={item.imageSrc}
+              alt={item.title}
+              loading={idx > 1 ? 'lazy' : undefined}
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-slate-950/10" />
+
+            <div className="absolute top-3 start-3 end-16 flex flex-wrap items-center gap-1.5">
+              <span className="bg-blue-600/90 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border border-blue-400/30">
+                {item.badge}
+              </span>
+              <span className="bg-slate-950/60 backdrop-blur-md text-slate-200 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-white/10">
+                {item.category}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onActiveChange(idx);
+                onOpen();
+              }}
+              aria-label={isRTL ? 'بزرگنمایی تصویر' : 'Fullscreen view'}
+              className="absolute top-3 end-3 w-11 h-11 grid place-items-center rounded-full bg-slate-950/60 backdrop-blur-md border border-white/15 text-white active:bg-blue-600 transition-colors"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+
+            <div className="absolute bottom-0 inset-x-0 p-5">
+              <div className="flex items-center gap-2 min-w-0 text-[11px] font-semibold text-blue-300">
+                <span className="font-mono tabular-nums whitespace-nowrap shrink-0">
+                  {pad2(idx + 1)}
+                  <span className="text-white/40"> / {pad2(items.length)}</span>
+                </span>
+                <span aria-hidden="true" className="w-4 h-px shrink-0 bg-blue-300/50" />
+                <span className="truncate">{item.subtitle}</span>
+              </div>
+              <h3 className="mt-1.5 text-xl font-bold text-white tracking-tight leading-snug">{item.title}</h3>
+              <p className="mt-1.5 text-[13px] text-slate-300 leading-6 line-clamp-3">{item.description}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="mt-4 flex items-center justify-center">
+        {items.map((item, idx) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => goTo(idx)}
+            aria-label={item.title}
+            aria-current={idx === activeIndex ? 'true' : undefined}
+            className="h-11 px-1 grid place-items-center"
+          >
+            <span
+              className={`block h-1.5 rounded-full transition-all duration-300 ${
+                idx === activeIndex ? 'w-6 bg-blue-400' : 'w-1.5 bg-white/25'
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 interface FactoryGalleryProps {
   lang: Language;
@@ -34,21 +159,40 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
+  const [isAutoplay, setIsAutoplay] = useState<boolean>(true);
+  const [isInView, setIsInView] = useState<boolean>(false);
 
+  const sectionRef = useRef<HTMLElement | null>(null);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const { sectionRef, pinRef, stickyTop, pinRun, goTo } = useStepScroll<HTMLElement>({
-    count: items.length,
-    setActiveIndex,
-    paused: isLightboxOpen,
-  });
+
+  const goTo = (index: number) => {
+    setIsAutoplay(false);
+    setActiveIndex(Math.max(0, Math.min(items.length - 1, index)));
+  };
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => setIsInView(entry.isIntersecting), {
+      threshold: 0.35,
+    });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktop || !isAutoplay || !isInView || isLightboxOpen || items.length < 2) return;
+    const id = window.setTimeout(
+      () => setActiveIndex((index) => (index + 1) % items.length),
+      AUTOPLAY_MS,
+    );
+    return () => window.clearTimeout(id);
+  }, [isDesktop, isAutoplay, isInView, isLightboxOpen, activeIndex, items.length]);
 
   const isRTL = lang === 'fa';
   const activeItem = items[activeIndex] || items[0];
-  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
-  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
-
   // Desktop: keep the 2-card window scrolled to the active item
   useEffect(() => {
     if (!isDesktop) return;
@@ -80,13 +224,9 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
       dir={isRTL ? 'rtl' : 'ltr'}
       className="relative bg-slate-950 text-white border-b border-slate-800/80 selection:bg-blue-500 selection:text-white"
     >
-      <div
-        ref={pinRef}
-        style={{ top: stickyTop }}
-        className="sticky min-h-svh flex flex-col justify-center overflow-hidden pt-20 pb-4 sm:pt-24 sm:pb-6 lg:py-20"
-      >
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative flex flex-col justify-center overflow-hidden py-16 sm:py-20 lg:py-24">
+        <div className="absolute -top-16 left-1/4 w-[32rem] h-[32rem] bg-radial-[closest-side] from-blue-600/15 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-radial-[closest-side] from-cyan-500/10 to-transparent pointer-events-none" />
 
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Header */}
@@ -104,11 +244,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
               </p>
             </div>
 
-            {/* Step controls — desktop step-scroll hint; mobile tap counters */}
-            <div className="flex items-center gap-3 self-start md:self-end shrink-0 bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800 backdrop-blur-md">
-              <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-300 pe-2.5 border-e border-slate-800 whitespace-nowrap">
-                <Mouse className="w-3.5 h-3.5 text-blue-400 animate-bounce" />
-              </div>
+            <div className="hidden lg:flex items-center gap-3 self-end shrink-0 bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800">
               <span className="text-xs font-mono font-bold text-blue-400 px-1 tabular-nums whitespace-nowrap">
                 {String(activeIndex + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
               </span>
@@ -120,7 +256,7 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                   className="min-h-11 min-w-11 grid place-items-center rounded-xl bg-slate-800 text-slate-200 hover:bg-blue-600 hover:text-white border border-slate-700 disabled:opacity-35 transition-all"
                   aria-label="Previous unit"
                 >
-                  {isDesktop ? <ChevronUp className="w-4 h-4" /> : <PrevIcon className="w-4 h-4" />}
+                  <ChevronUp className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
@@ -129,15 +265,26 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                   className="min-h-11 min-w-11 grid place-items-center rounded-xl bg-slate-800 text-slate-200 hover:bg-blue-600 hover:text-white border border-slate-700 disabled:opacity-35 transition-all"
                   aria-label="Next unit"
                 >
-                  {isDesktop ? <ChevronDown className="w-4 h-4" /> : <NextIcon className="w-4 h-4" />}
+                  <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {!isDesktop && (
+            <MobileCarousel
+              items={items}
+              isRTL={isRTL}
+              activeIndex={activeIndex}
+              onActiveChange={setActiveIndex}
+              onOpen={() => setIsLightboxOpen(true)}
+            />
+          )}
+
+          {isDesktop && (
+          <div className="grid grid-cols-12 gap-8 items-start">
             {/* Main image */}
-            <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-3 sm:p-4 shadow-2xl backdrop-blur-xl">
+            <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-3 sm:p-4 shadow-2xl">
               <div className="flex items-center justify-between px-2 pb-2.5 mb-2.5 border-b border-slate-800/80 text-xs text-slate-400">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -150,7 +297,10 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                 </div>
               </div>
 
-              <div className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-slate-950 border border-slate-800/60 group">
+              <div
+                onClick={() => setIsAutoplay(false)}
+                className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-slate-950 border border-slate-800/60 group"
+              >
                 {items.map((item, idx) => {
                   const isCurrent = idx === activeIndex;
                   return (
@@ -321,26 +471,11 @@ export const FactoryGallery: React.FC<FactoryGalleryProps> = ({
                   <div className="h-[184px] shrink-0 pointer-events-none" />
                 </div>
               </div>
-
-              <div className="mt-3.5 flex items-center justify-between text-xs text-slate-400 px-1">
-                <span>
-                  {activeIndex < items.length - 1
-                    ? isRTL
-                      ? `با اسکرول به واحد بعدی بروید (${items.length - 1 - activeIndex} واحد باقی‌مانده)`
-                      : `Scroll for next unit (${items.length - 1 - activeIndex} remaining)`
-                    : isRTL
-                    ? 'پایان واحدها — با اسکرول بعدی به بخش بعد می‌روید ↓'
-                    : 'All units viewed — scroll again for next section ↓'}
-                </span>
-              </div>
             </div>
           </div>
+          )}
         </div>
       </div>
-
-      {pinRun > 0 && (
-        <div aria-hidden="true" style={{ height: pinRun }} />
-      )}
 
       {isLightboxOpen && (
         <div

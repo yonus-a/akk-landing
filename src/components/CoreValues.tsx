@@ -90,7 +90,7 @@ export const CoreValues: React.FC<CoreValuesProps> = ({
       id="values"
       lang={lang}
       aria-labelledby="core-values-heading"
-      className="relative py-20 lg:py-28 bg-slate-50/80 border-b border-slate-200/80 overflow-hidden"
+      className="relative py-12 lg:py-16 bg-slate-50/80 border-b border-slate-200/80 overflow-hidden"
     >
       <div 
         aria-hidden="true" 
@@ -110,11 +110,11 @@ export const CoreValues: React.FC<CoreValuesProps> = ({
           </div>
           <h2 
             id="core-values-heading"
-            className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-4"
+            className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-4"
           >
             {title}
           </h2>
-          <p className="text-base text-slate-600 leading-relaxed mb-8">
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">
             {subtitle}
           </p>
 
@@ -122,7 +122,7 @@ export const CoreValues: React.FC<CoreValuesProps> = ({
             aria-live="polite"
             className="relative rounded-2xl bg-white border border-slate-200 shadow-[0_20px_40px_-20px_rgba(30,64,175,0.18)] p-6 sm:p-7 overflow-hidden"
           >
-            <div aria-hidden="true" className="absolute -top-20 -end-20 w-56 h-56 rounded-full bg-blue-500/10 blur-2xl" />
+            <div aria-hidden="true" className="absolute -top-28 -end-28 w-72 h-72 bg-radial-[closest-side] from-blue-500/10 to-transparent" />
             <div key={active.id} className="relative flex items-start gap-4 animate-[vc-in_450ms_ease-out] motion-reduce:animate-none">
               <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/30">
                 <ActiveIcon className="w-6 h-6" aria-hidden="true" />

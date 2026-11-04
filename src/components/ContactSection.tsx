@@ -95,11 +95,13 @@ const FloatingField: React.FC<{
   value: string;
   maxLength?: number;
   dir?: 'ltr' | 'rtl';
+  autoComplete?: string;
   onChange: (value: string) => void;
-}> = ({ label, required, multiline, type = 'text', value, maxLength, dir, onChange }) => {
+}> = ({ label, required, multiline, type = 'text', value, maxLength, dir, autoComplete, onChange }) => {
   const id = useId();
   const fieldClass =
-    'peer w-full px-3.5 pt-6 pb-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 outline-none transition-all focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 hover:border-slate-300';
+    // 16px on phones: iOS zooms the page into any focused field with smaller text.
+    'peer w-full px-3.5 pt-6 pb-2 bg-slate-50 border border-slate-200 rounded-xl text-base sm:text-sm text-slate-900 outline-none transition-all focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 hover:border-slate-300';
   return (
     <div className="relative">
       {multiline ? (
@@ -120,6 +122,7 @@ const FloatingField: React.FC<{
           required={required}
           placeholder=" "
           dir={dir}
+          autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={`${fieldClass} ${dir === 'ltr' ? 'text-start' : ''}`}
@@ -218,13 +221,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   ];
 
   return (
-    <section id="contact" className="py-20 lg:py-28 bg-white relative border-b border-slate-200 overflow-hidden">
-      <div aria-hidden="true" className="absolute -top-40 end-0 w-[520px] h-[520px] rounded-full bg-blue-100/50 blur-[120px] pointer-events-none" />
+    <section id="contact" className="py-12 lg:py-16 bg-white relative border-b border-slate-200 overflow-hidden">
+      <div aria-hidden="true" className="absolute -top-64 -end-24 w-[760px] h-[760px] bg-radial-[closest-side] from-blue-100/60 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 mb-8 lg:mb-12">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
               <span>{kicker}</span>
@@ -348,7 +351,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     onClick={() => copy(`${site.address}, ${site.city}`)}
                     aria-label={isFa ? 'کپی نشانی' : 'Copy address'}
                     title={isFa ? 'کپی نشانی' : 'Copy address'}
-                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                    className="min-h-11 min-w-11 grid place-items-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
                   >
                     {copied === `${site.address}, ${site.city}` ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -356,7 +359,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     href={mapsHref(site.address, site.city)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold transition-colors"
+                    className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold transition-colors"
                   >
                     <Navigation className="w-3.5 h-3.5" />
                     {isFa ? 'مسیریابی' : 'Directions'}
@@ -414,7 +417,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
           <div className="lg:col-span-7">
             <div className="relative rounded-3xl bg-white border border-slate-200 shadow-[0_30px_60px_-30px_rgba(30,64,175,0.25)] overflow-hidden">
               {/* Ticket header */}
-              <div className="flex items-center justify-between gap-4 px-6 sm:px-8 py-4 bg-slate-50 border-b border-dashed border-slate-300">
+              <div className="flex items-center justify-between gap-4 px-5 sm:px-8 py-4 bg-slate-50 border-b border-dashed border-slate-300">
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold text-slate-900">{formTitle}</h3>
                   <p className="text-xs text-slate-500 mt-0.5">{formDesc}</p>
@@ -425,7 +428,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 </div>
               </div>
 
-              <div className="p-6 sm:p-8">
+              <div className="p-5 sm:p-8">
                 {status === 'success' && ticket ? (
                   <div className="relative py-6 text-center animate-[vc-in_450ms_ease-out] motion-reduce:animate-none">
                     <div className="mx-auto w-fit -rotate-6 px-5 py-2 rounded-lg border-[3px] border-emerald-600 text-emerald-700 font-black text-xl tracking-widest uppercase animate-[stamp_500ms_cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:animate-none">
@@ -492,10 +495,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     </fieldset>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FloatingField label={nameLabel} required value={formData.name} onChange={update('name')} />
-                      <FloatingField label={phoneLabel} required type="tel" dir="ltr" value={formData.phone} onChange={update('phone')} />
+                      <FloatingField label={nameLabel} required autoComplete="name" value={formData.name} onChange={update('name')} />
+                      <FloatingField label={phoneLabel} required type="tel" dir="ltr" autoComplete="tel" value={formData.phone} onChange={update('phone')} />
                     </div>
-                    <FloatingField label={emailLabel} type="email" dir="ltr" value={formData.email} onChange={update('email')} />
+                    <FloatingField label={emailLabel} type="email" dir="ltr" autoComplete="email" value={formData.email} onChange={update('email')} />
                     <FloatingField
                       label={messageLabel}
                       required
@@ -512,7 +515,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                       <button
                         type="submit"
                         disabled={status === 'submitting'}
-                        className="group relative overflow-hidden inline-flex items-center justify-center gap-2 px-7 py-3 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-80 rounded-xl shadow-lg shadow-blue-700/25 transition-all"
+                        className="group relative overflow-hidden w-full sm:w-auto min-h-12 inline-flex items-center justify-center gap-2 px-7 py-3 text-sm font-bold text-white bg-blue-700 hover:bg-blue-800 disabled:opacity-80 rounded-xl shadow-lg shadow-blue-700/25 transition-all"
                       >
                         <span>{status === 'submitting' ? sendingText : submitBtn}</span>
                         <Send

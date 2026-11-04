@@ -13,6 +13,7 @@ import { FinalCTA } from './components/FinalCTA';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
+import { MobileActionBar } from './components/MobileActionBar';
 
 export default function App() {
   const [lang, setLang] = useState<Language>(() => {
@@ -187,6 +188,7 @@ export default function App() {
       />
 
       <ScrollToTop lang={lang} />
+      <MobileActionBar lang={lang} phone={t.contact.info.phoneNumbers[0]} />
 
     </div>
   );

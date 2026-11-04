@@ -34,7 +34,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({
     <section
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="group relative py-20 lg:py-24 text-white overflow-hidden isolate"
+      className="group relative py-14 lg:py-16 text-white overflow-hidden isolate"
       style={{
         backgroundColor: '#0b1f4d',
         backgroundImage: `
@@ -90,7 +90,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({
       </div>
 
       {/* Center glow behind content */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[36rem] h-56 rounded-full bg-sky-400/20 blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[44rem] h-80 bg-radial-[closest-side] from-sky-400/20 to-transparent -z-10 pointer-events-none" />
 
       {/* Film grain */}
       <div

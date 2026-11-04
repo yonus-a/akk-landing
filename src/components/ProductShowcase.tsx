@@ -195,57 +195,54 @@ export const ProductShowcase: React.FC<ProductShowcaseProps> = ({
   const isRtl = lang === 'fa';
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const explodedTrackRef = useRef<HTMLDivElement>(null);
+  const mobileStageRef = useRef<HTMLDivElement>(null);
   const scrollHint = isRtl ? 'برای مشاهده جداسازی قطعات اسکرول کنید' : 'Scroll to explore the disassembly';
 
   return (
-    <section id="products" className="pt-20 lg:pt-0 pb-20 lg:pb-28 bg-slate-50 relative border-b border-slate-200">
-      {!isDesktop && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
-        </div>
-      )}
-
-      {/* Exploded-view runway: the stage stays pinned while scrolling disassembles the car.
-          Desktop puts the header beside the drawing; mobile pins the drawing alone under the header. */}
-      <div ref={explodedTrackRef} className="relative h-[200svh] lg:h-[300vh] mb-10 lg:mb-14">
-        <div className="sticky top-0 h-svh lg:h-screen overflow-clip flex flex-col pt-20 pb-4 lg:pb-0 lg:justify-center">
-          {isDesktop ? (
-            <>
-              <PorscheShowcase
-                variant="backdrop"
-                refreshKey={lang}
-                triggerRef={explodedTrackRef}
-                start="top top"
-                end="bottom bottom"
-              />
-              <div className="relative max-w-7xl mx-auto px-8 w-full z-10 pointer-events-none">
-                <div className="grid grid-cols-12 gap-12 items-center">
-                  <div className={`col-span-5 pointer-events-auto ${isRtl ? '' : 'col-start-8'}`}>
-                    <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
-                    <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                      {scrollHint}
-                    </p>
-                  </div>
+    <section id="products" className="pt-12 lg:pt-0 pb-12 lg:pb-16 bg-slate-50 relative border-b border-slate-200">
+      {isDesktop ? (
+        // Exploded-view runway: the stage stays pinned beside the header while scrolling disassembles the car.
+        <div ref={explodedTrackRef} className="relative h-[300vh] mb-14">
+          <div className="sticky top-0 h-screen overflow-clip flex flex-col pt-20 justify-center">
+            <PorscheShowcase
+              variant="backdrop"
+              refreshKey={lang}
+              triggerRef={explodedTrackRef}
+              start="top top"
+              end="bottom bottom"
+            />
+            <div className="relative max-w-7xl mx-auto px-8 w-full z-10 pointer-events-none">
+              <div className="grid grid-cols-12 gap-12 items-center">
+                <div className={`col-span-5 pointer-events-auto ${isRtl ? '' : 'col-start-8'}`}>
+                  <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
+                  <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-500">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                    {scrollHint}
+                  </p>
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="relative flex-1 min-h-0">
-              <PorscheShowcase
-                variant="inline"
-                refreshKey={lang}
-                triggerRef={explodedTrackRef}
-                start="top top"
-                end="bottom bottom"
-              />
-              <span className="absolute bottom-2 inset-x-0 mx-auto w-fit px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/80 text-[11px] font-medium text-slate-500 pointer-events-none">
-                {scrollHint}
-              </span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Phones: no pinning; the car comes apart while its stage travels through the viewport.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+          <SectionHeader kicker={kicker} title={title} subtitle={subtitle} />
+          <div ref={mobileStageRef} className="relative -mx-4 sm:-mx-6 mt-2 h-[min(110vw,62svh)]">
+            <PorscheShowcase
+              variant="inline"
+              refreshKey={lang}
+              triggerRef={mobileStageRef}
+              start="top 80%"
+              end="bottom 20%"
+            />
+            <span className="absolute bottom-1 inset-x-0 mx-auto w-fit inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-slate-200/80 text-[11px] font-medium text-slate-500 pointer-events-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse motion-reduce:animate-none" />
+              {scrollHint}
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Featured Products as part tags */}

@@ -3,7 +3,7 @@ import {
   Network, Globe, Layers, Cpu, ShieldCheck, 
   Palette, PackageCheck, Warehouse, Truck, 
   Factory, Sparkles, MapPin, Package, Mouse,
-  ArrowLeft, ArrowRight, Check, RotateCcw, Building2,
+  ArrowLeft, ArrowRight, Check, RotateCcw, Building2, ChevronDown,
 } from 'lucide-react';
 import { Language, ValueChainStep, IndustrialFacility } from '../types';
 import { useStepScroll } from '../hooks/useStepScroll';
@@ -115,6 +115,134 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 const easeInOutCubic = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** Phone layout: the chain as a vertical production line; one station is open at a time. */
+const MobileStations: React.FC<{ lang: Language; steps: ValueChainStep[]; sites: IndustrialFacility[] }> = ({
+  lang,
+  steps,
+  sites,
+}) => {
+  const [open, setOpen] = useState(0);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const siteIndexById = useMemo(() => new Map(sites.map((s, i) => [s.id, i])), [sites]);
+
+  const toggle = (idx: number) => {
+    setOpen((prev) => (prev === idx ? -1 : idx));
+    // Wait for the previously open station to collapse before bringing this one into view.
+    window.setTimeout(() => itemRefs.current[idx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 320);
+  };
+
+  return (
+    <ol className="relative">
+      {steps.map((step, idx) => {
+        const siteIdx = siteIndexById.get(step.siteId) ?? 0;
+        const site = sites[siteIdx];
+        const accent = SITE_ACCENTS[siteIdx % SITE_ACCENTS.length];
+        const Icon = iconMap[step.iconName] || Layers;
+        const isOpen = idx === open;
+        const isDone = open >= 0 && idx < open;
+        return (
+          <li
+            key={step.id}
+            ref={(el) => {
+              itemRefs.current[idx] = el;
+            }}
+            className="relative ps-14 pb-3 last:pb-0"
+          >
+            {idx < steps.length - 1 && (
+              <span
+                aria-hidden="true"
+                className="absolute start-[21px] top-12 -bottom-1 w-0.5 rounded-full transition-colors duration-500"
+                style={{ backgroundColor: isDone ? accent.hex : 'rgb(255 255 255 / 0.08)' }}
+              />
+            )}
+            <span
+              aria-hidden="true"
+              className={`absolute start-0 top-1.5 w-11 h-11 rounded-xl border-2 grid place-items-center transition-all duration-300 ${
+                isOpen ? accent.node : isDone ? accent.done : 'bg-slate-900 border-slate-700 text-slate-500'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+            </span>
+
+            <div
+              className={`rounded-2xl border transition-colors duration-300 ${
+                isOpen ? 'bg-white/[0.06] border-white/15' : 'bg-white/[0.02] border-white/[0.06]'
+              }`}
+            >
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={`vc-m-${step.id}`}
+                onClick={() => toggle(idx)}
+                className="w-full flex items-center gap-3 p-3.5 text-start rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold">
+                    <span className="font-mono tabular-nums text-slate-500">{pad2(step.order)}</span>
+                    {site && (
+                      <span className={`inline-flex items-center gap-1 min-w-0 px-1.5 py-0.5 rounded border ${accent.chip}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${accent.dot}`} />
+                        <span className="truncate">{site.category}</span>
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="mt-1.5 text-[15px] font-bold text-white leading-snug">{step.title}</h3>
+                  <p className="mt-0.5 text-xs text-slate-400 leading-relaxed">{step.shortDesc}</p>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 shrink-0 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-white' : ''}`}
+                />
+              </button>
+
+              <div
+                id={`vc-m-${step.id}`}
+                className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                  isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="px-3.5 pb-4 space-y-3.5">
+                    <p className="text-[13px] text-slate-300 leading-6">{step.fullDesc}</p>
+                    <ul aria-label={lang === 'fa' ? 'خروجی‌های کلیدی این مرحله' : 'Key outputs'} className="space-y-1.5">
+                      {step.keyOutputs.map((output, oIdx) => (
+                        <li key={oIdx} className="flex items-start gap-2 text-xs text-slate-300">
+                          <span className="w-4 h-4 rounded bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0 mt-px">
+                            <Check className="w-3 h-3" strokeWidth={3} />
+                          </span>
+                          <span className="leading-snug font-medium">{output}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {site && (
+                      <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.04] border border-white/10">
+                        <img
+                          src={site.imageSrc}
+                          alt={site.imageCaption}
+                          loading="lazy"
+                          className="w-16 h-12 shrink-0 rounded-lg object-cover bg-slate-800"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-white leading-snug">{site.title}</div>
+                          <div className="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500">
+                            <MapPin className="w-3 h-3 shrink-0" />
+                            <span className="truncate">
+                              {site.scale ?? (lang === 'fa' ? 'کرمان، شهرک صنعتی شماره ۲' : 'Kerman, Industrial City No. 2')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+};
+
 export const ValueChain: React.FC<ValueChainProps> = ({
   lang,
   kicker,
@@ -126,9 +254,11 @@ export const ValueChain: React.FC<ValueChainProps> = ({
   const isRtl = lang === 'fa';
   const [activeIndex, setActiveIndex] = useState(0);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  // Pinned step-scrolling is desktop only: on touch screens it fights the browser's own scrolling.
   const { sectionRef, pinRef, stickyTop, pinRun, goTo } = useStepScroll<HTMLElement>({
     count: steps.length,
     setActiveIndex,
+    enabled: isDesktop,
   });
 
   const beltPathRef = useRef<SVGPathElement>(null);
@@ -203,7 +333,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [activeIndex, conveyor, isRtl]);
+  }, [activeIndex, conveyor, isRtl, isDesktop]);
 
   const select = goTo;
 
@@ -222,6 +352,35 @@ export const ValueChain: React.FC<ValueChainProps> = ({
   };
 
   if (!count || !activeStep) return null;
+
+  if (!isDesktop) {
+    return (
+      <section id="value-chain" className="relative py-14 sm:py-20 bg-slate-950 text-white border-b border-slate-800 overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none opacity-40 [mask-image:linear-gradient(to_bottom,black,transparent_60%)]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgb(59 130 246 / 0.12) 1px, transparent 1px), linear-gradient(to bottom, rgb(59 130 246 / 0.12) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        <div aria-hidden="true" className="absolute -top-24 -end-24 w-80 h-80 rounded-full bg-blue-600/20 blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-2xl mx-auto px-4 sm:px-6">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
+              <Layers className="w-4 h-4" />
+              <span>{kicker}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight mb-3">{title}</h2>
+            <p className="text-sm text-slate-400 leading-relaxed">{subtitle}</p>
+          </div>
+          <MobileStations lang={lang} steps={steps} sites={sites} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
@@ -246,8 +405,8 @@ export const ValueChain: React.FC<ValueChainProps> = ({
       />
       <div
         aria-hidden="true"
-        className="absolute -top-32 start-1/4 w-[520px] h-[320px] rounded-full blur-[120px] opacity-25 transition-colors duration-1000 pointer-events-none"
-        style={{ backgroundColor: activeAccent.hex }}
+        className="absolute -top-56 start-1/4 w-[760px] h-[560px] -ms-32 opacity-25 pointer-events-none"
+        style={{ backgroundImage: `radial-gradient(closest-side, ${activeAccent.hex}, transparent)` }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -307,7 +466,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Conveyor Map */}
-          <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 flex flex-col">
+          <div className="lg:col-span-7 rounded-2xl border border-white/10 bg-slate-900/60 p-3 sm:p-4 flex flex-col">
             <div
               className="relative w-full aspect-[4/3] sm:aspect-[var(--vc-ar)] rounded-xl overflow-hidden px-2 sm:px-3"
               style={{ '--vc-ar': `${VB_W}/${conveyor.height}` } as React.CSSProperties}
@@ -475,7 +634,7 @@ export const ValueChain: React.FC<ValueChainProps> = ({
             id="vc-panel"
             role="tabpanel"
             aria-labelledby={`vc-tab-${activeStep.id}`}
-            className="lg:col-span-5 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm overflow-hidden"
+            className="lg:col-span-5 rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden"
           >
             <div
               key={activeStep.id}

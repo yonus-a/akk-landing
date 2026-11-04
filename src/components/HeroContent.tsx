@@ -13,22 +13,27 @@ import {
 } from 'lucide-react';
 import { Language } from '../types';
 
+/** Copy for one shot of the hero film; the hero's subtitle and description slot shows the active one. */
+export interface HeroStage {
+  label: string;
+  title: string;
+  text: string;
+}
+
 interface HeroContentProps {
   lang: Language;
   tag: string;
   title: string;
-  subtitle: string;
-  description: string;
+  stages: HeroStage[];
+  activeStage: number;
   ctaPrimary: string;
   ctaSecondary: string;
   ctaContact: string;
   stats: { value: string; label: string }[];
-  /** When false the stat cards are left out (mobile renders them under the 3D stage instead). */
-  showStats?: boolean;
 }
 
 // Matches the fixed order of `hero.stats` in content.ts: founded, sites, plant area, logistics area.
-const STAT_ICONS: LucideIcon[] = [CalendarClock, MapPinned, Factory, Warehouse];
+export const STAT_ICONS: LucideIcon[] = [CalendarClock, MapPinned, Factory, Warehouse];
 
 const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -49,6 +54,7 @@ const fadeUpBlur: Variants = {
     y: 0,
     filter: 'blur(0px)',
     transition: { duration: 0.8, ease: EASE_OUT_EXPO },
+    transitionEnd: { filter: 'none' },
   },
 };
 
@@ -78,16 +84,7 @@ const titleWord: Variants = {
       duration: 0.85,
       ease: EASE_OUT_EXPO,
     },
-  },
-};
-
-const subtitleVariants: Variants = {
-  hidden: { opacity: 0, x: -16, filter: 'blur(6px)' },
-  show: {
-    opacity: 1,
-    x: 0,
-    filter: 'blur(0px)',
-    transition: { duration: 0.75, ease: EASE_OUT_EXPO },
+    transitionEnd: { filter: 'none' },
   },
 };
 
@@ -109,6 +106,7 @@ const statCard: Variants = {
     scale: 1,
     filter: 'blur(0px)',
     transition: { duration: 0.7, ease: EASE_OUT_EXPO },
+    transitionEnd: { filter: 'none' },
   },
 };
 
@@ -116,13 +114,12 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   lang,
   tag,
   title,
-  subtitle,
-  description,
+  stages,
+  activeStage,
   ctaPrimary,
   ctaSecondary,
   ctaContact,
   stats,
-  showStats = true,
 }) => {
   const isRtl = lang === 'fa';
   const ForwardArrow = isRtl ? ArrowLeft : ArrowRight;
@@ -151,14 +148,14 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         {/* Ambient Decorative Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-16 -start-16 w-72 h-72 rounded-full bg-blue-500/10 blur-3xl -z-10"
+          className="pointer-events-none absolute -top-24 -start-24 w-96 h-96 bg-radial-[closest-side] from-blue-500/10 to-transparent -z-10"
         />
 
         {/* Kicker / Badge */}
         <motion.div
           variants={fadeUpBlur}
           whileHover={{ scale: 1.02 }}
-          className="group relative inline-flex items-center gap-2.5 w-fit ps-1.5 pe-4 py-1.5 rounded-full bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-[0_2px_15px_-3px_rgba(15,23,42,0.06)] overflow-hidden cursor-default"
+          className="group relative inline-flex items-center gap-2.5 w-fit ps-1.5 pe-4 py-1.5 rounded-full bg-white/80 border border-slate-200/80 shadow-[0_2px_15px_-3px_rgba(15,23,42,0.06)] overflow-hidden cursor-default"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/5 to-blue-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
 
@@ -211,30 +208,10 @@ export const HeroContent: React.FC<HeroContentProps> = ({
           })}
         </motion.h1>
 
-        {/* Animated Subtitle with Accent Bar */}
-        <motion.div
-          variants={subtitleVariants}
-          className="mt-5 flex items-center gap-3.5"
-        >
-          <motion.span
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: '1.5rem', opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45, ease: EASE_OUT_EXPO }}
-            aria-hidden="true"
-            className="w-1 rounded-full bg-gradient-to-b from-blue-600 to-cyan-500 shrink-0"
-          />
-          <h2 className="text-base sm:text-lg font-medium leading-relaxed bg-gradient-to-r from-blue-800 via-blue-700 to-slate-700 bg-clip-text text-transparent">
-            {subtitle}
-          </h2>
+        {/* Subtitle and description, following the film shot by shot */}
+        <motion.div variants={fadeUpBlur} className="mt-5">
+          <HeroStageCopy lang={lang} stages={stages} active={activeStage} />
         </motion.div>
-
-        {/* Description */}
-        <motion.p
-          variants={fadeUpBlur}
-          className="mt-4 max-w-xl text-[15px] sm:text-base text-slate-600/95 leading-8"
-        >
-          {description}
-        </motion.p>
 
         {/* Actions */}
         <motion.div
@@ -268,7 +245,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 min-h-12 py-2.5 ps-1.5 pe-5 rounded-full text-sm font-semibold text-slate-800 bg-white/85 backdrop-blur-md border border-slate-200/90 hover:border-blue-300 hover:text-blue-700 hover:bg-white shadow-sm shadow-slate-900/[0.04] hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+            className="group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 min-h-12 py-2.5 ps-1.5 pe-5 rounded-full text-sm font-semibold text-slate-800 bg-white/85 border border-slate-200/90 hover:border-blue-300 hover:text-blue-700 hover:bg-white shadow-sm shadow-slate-900/[0.04] hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
           >
             <span className="grid place-items-center w-9 h-9 shrink-0 rounded-full bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
               <Factory
@@ -300,7 +277,6 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         </motion.div>
 
         {/* Creative Architectural Bento Stats Cards (Hover-Only, No Scroll/Numbering) */}
-        {showStats && (
         <motion.dl
           variants={statsContainer}
           onMouseLeave={() => setHoveredIdx(null)}
@@ -320,7 +296,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
                 className={`group relative flex flex-col justify-between min-h-[120px] sm:min-h-[144px] p-3 sm:p-5 rounded-2xl sm:rounded-3xl cursor-default select-none overflow-hidden transition-shadow duration-500 ${
                   isActive
                     ? 'shadow-xl shadow-blue-700/25 ring-1 ring-blue-500/40'
-                    : 'bg-white/80 backdrop-blur-xl border border-slate-200/80 shadow-sm shadow-slate-900/[0.03] hover:border-blue-200'
+                    : 'bg-white/80 border border-slate-200/80 shadow-sm shadow-slate-900/[0.03] hover:border-blue-200'
                 }`}
               >
                 {/* Shared Morphing Hover Blue Background */}
@@ -334,8 +310,8 @@ export const HeroContent: React.FC<HeroContentProps> = ({
                       transition={{ type: 'spring', stiffness: 320, damping: 28 }}
                       className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 -z-10"
                     >
-                      <div className="absolute -top-10 -end-10 w-28 h-28 rounded-full bg-cyan-400/25 blur-2xl" />
-                      <div className="absolute -bottom-8 -start-8 w-24 h-24 rounded-full bg-blue-400/20 blur-xl" />
+                      <div className="absolute -top-14 -end-14 w-36 h-36 bg-radial-[closest-side] from-cyan-400/25 to-transparent" />
+                      <div className="absolute -bottom-11 -start-11 w-30 h-30 bg-radial-[closest-side] from-blue-400/20 to-transparent" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -367,7 +343,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
                     <span
                       className={`grid place-items-center w-10 h-10 rounded-2xl transition-all duration-300 ${
                         isActive
-                          ? 'bg-white/15 text-white backdrop-blur-md border border-white/25 shadow-inner'
+                          ? 'bg-white/15 text-white border border-white/25 shadow-inner'
                           : 'bg-blue-50/90 text-blue-700 border border-blue-100/80'
                       }`}
                     >
@@ -390,7 +366,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
                   />
                 </div>
 
-                {/* Bottom Row: Value + Label + Animated Progress Line */}
+                {/* Bottom Row: Value + Label */}
                 <div className="relative z-10 mt-3 sm:mt-5">
                   <dd
                     className={`text-xl sm:text-[26px] font-extrabold tabular-nums tracking-tight leading-none transition-colors duration-300 ${
@@ -407,32 +383,11 @@ export const HeroContent: React.FC<HeroContentProps> = ({
                   >
                     {stat.label}
                   </dt>
-
-                  {/* Bottom Engineering Accent Bar */}
-                  <div
-                    className={`mt-3 h-1 w-full rounded-full overflow-hidden transition-colors duration-300 ${
-                      isActive ? 'bg-white/20' : 'bg-slate-100'
-                    }`}
-                  >
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        width: isActive ? '100%' : '24%',
-                      }}
-                      transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
-                      className={`h-full rounded-full ${
-                        isActive
-                          ? 'bg-gradient-to-r from-cyan-300 to-white'
-                          : 'bg-blue-600/35'
-                      }`}
-                    />
-                  </div>
                 </div>
               </motion.div>
             );
           })}
         </motion.dl>
-        )}
 
         {/* Modern Scroll Hint */}
         <motion.div
@@ -470,29 +425,61 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   );
 };
 
-/** Dense stat strip shown under the mobile 3D stage, where vertical space is shared with the drawing. */
-export const HeroStatsCompact: React.FC<{ stats: { value: string; label: string }[] }> = ({ stats }) => (
-  <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-    {stats.map((stat, idx) => {
-      const Icon = STAT_ICONS[idx];
-      return (
-        <div
-          key={idx}
-          className="flex items-center gap-2.5 min-w-0 p-2.5 sm:p-3 rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 shadow-sm shadow-slate-900/[0.03]"
-        >
-          {Icon && (
-            <span className="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-blue-50/90 text-blue-700 border border-blue-100/80">
-              <Icon className="w-4 h-4" strokeWidth={2} />
+/**
+ * Stage label, title and text for the active film shot. Every stage is stacked in one grid cell, so the block is
+ * always as tall as the longest stage and switching never shifts the layout around it.
+ */
+export const HeroStageCopy: React.FC<{ lang: Language; stages: HeroStage[]; active: number }> = ({
+  lang,
+  stages,
+  active,
+}) => {
+  const number = (n: number) => new Intl.NumberFormat(lang === 'fa' ? 'fa-IR' : 'en-US', { minimumIntegerDigits: 2 }).format(n);
+  return (
+    <div aria-live="polite">
+      <p className="flex items-center gap-2.5 text-[11px] sm:text-xs font-bold tracking-wider text-blue-700">
+        <span className="tabular-nums">
+          {number(active + 1)}
+          <span className="text-blue-400"> / {number(stages.length)}</span>
+        </span>
+        <span aria-hidden="true" className="w-6 h-px bg-blue-300" />
+        <span className="grid">
+          {stages.map((stage, i) => (
+            <span
+              key={stage.label}
+              aria-hidden={i !== active}
+              className={`[grid-area:1/1] whitespace-nowrap transition-opacity duration-500 ${i === active ? 'opacity-100' : 'opacity-0'}`}
+            >
+              {stage.label}
             </span>
-          )}
-          <div className="min-w-0 flex flex-col-reverse">
-            <dt className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-snug truncate">{stat.label}</dt>
-            <dd className="text-base sm:text-lg font-extrabold tabular-nums tracking-tight leading-tight text-slate-900">
-              {stat.value}
-            </dd>
-          </div>
-        </div>
-      );
-    })}
-  </dl>
-);
+          ))}
+        </span>
+      </p>
+
+      <div className="grid mt-3">
+        {stages.map((stage, i) => {
+          const isActive = i === active;
+          return (
+            <div
+              key={stage.label}
+              aria-hidden={!isActive}
+              className={`[grid-area:1/1] transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+                isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
+                <span aria-hidden="true" className="w-1 h-6 rounded-full bg-gradient-to-b from-blue-600 to-cyan-500 shrink-0" />
+                <h2 className="text-base sm:text-lg font-medium leading-relaxed bg-gradient-to-r from-blue-800 via-blue-700 to-slate-700 bg-clip-text text-transparent">
+                  {stage.title}
+                </h2>
+              </div>
+              <p className="mt-4 max-w-xl text-[15px] sm:text-base text-slate-600/95 leading-8">
+                {stage.text}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

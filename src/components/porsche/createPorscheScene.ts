@@ -92,6 +92,8 @@ const BASE_FOV = 32;
 // same horizontal framing (and therefore the same composition) is preserved.
 const REFERENCE_ASPECT = 16 / 9;
 const FRAME_MS = 1000 / 60;
+// The full-screen graphite shader is fill-rate bound; rendering above 1.5x costs far more than it shows.
+const MAX_PIXEL_RATIO = 1.5;
 
 export interface PorscheSceneOptions {
   /** Camera zoom multiplier; >1 enlarges the car. */
@@ -687,7 +689,7 @@ export function createPorscheScene(
     alpha: true,
     powerPreference: 'high-performance',
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 
   const masterGroup = new THREE.Group();
   scene.add(masterGroup);
@@ -3709,7 +3711,7 @@ export function createPorscheScene(
         camera.setViewOffset(width, height, (0.5 - centerX) * width, 0, width, height);
       }
       camera.updateProjectionMatrix();
-      const pixelRatio = Math.min(window.devicePixelRatio, 2);
+      const pixelRatio = Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
       renderer.setPixelRatio(pixelRatio);
       renderer.setSize(width, height, false);
       const drawingBuffer = renderer.getDrawingBufferSize(new THREE.Vector2());

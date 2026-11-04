@@ -1,0 +1,22 @@
+/* Embeddable film stage: every layer is positioned inside the .hero-film container, which the host sizes.
+   Layered so host utility classes (e.g. Tailwind's `absolute`) can override the defaults. This file can load
+   before Tailwind's, so the layer order is restated here; otherwise preflight (`video { height: auto }`) wins. */
+@layer theme, base, components, utilities;
+@layer components {
+.hero-film { position: relative; overflow: hidden; background: #0b1220; pointer-events: none; }
+
+.hf-stage { position: absolute; inset: 0; transform-origin: 50% 55%; }
+/* Zoomed in and panned left so the halls sit clear of the hero copy on the right. */
+.hero-film.is-clear-copy .hf-stage { transform: translate3d(-6%, 0, 0) scale(1.14); }
+.hf-video { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Deep blue at the top fading to clear at the bottom. */
+.hf-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: 0.5;
+  background: linear-gradient(to bottom, rgba(0, 91, 154, 1) 1%, rgba(61, 193, 230, 0)); }
+
+/* Soft vignette so the footage sits into the page. */
+.hf-grade { position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 85% at 50% 45%, transparent 55%, rgba(6,10,20,0.4) 100%),
+    linear-gradient(180deg, rgba(6,10,20,0.2) 0%, transparent 22%, transparent 70%, rgba(6,10,20,0.3) 100%); }
+}

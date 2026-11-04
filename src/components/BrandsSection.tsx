@@ -97,7 +97,7 @@ const BrandCard: React.FC<{ brand: BrandInfo; theme: BrandTheme; lang: Language 
         background: `radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(${theme.rgb} / 0.7), rgb(255 255 255 / 0.08) 45%)`,
       }}
     >
-      <div className="relative h-full rounded-[calc(1.5rem-1px)] bg-slate-900 overflow-hidden p-6 sm:p-8 flex flex-col">
+      <div className="relative h-full rounded-[calc(1.5rem-1px)] bg-slate-900 overflow-hidden p-5 sm:p-8 flex flex-col">
         {/* Inner cursor glow */}
         <div
           aria-hidden="true"
@@ -207,10 +207,10 @@ export const BrandsSection: React.FC<BrandsSectionProps> = ({
   brands,
 }) => {
   return (
-    <section id="brands" className="py-20 lg:py-28 bg-slate-950 text-white relative border-b border-slate-800 overflow-hidden">
+    <section id="brands" className="py-12 lg:py-16 bg-slate-950 text-white relative border-b border-slate-800 overflow-hidden">
       {/* Ambient brand glows */}
-      <div aria-hidden="true" className="absolute top-1/3 start-0 w-[480px] h-[480px] rounded-full bg-blue-600/15 blur-[140px] pointer-events-none" />
-      <div aria-hidden="true" className="absolute bottom-0 end-0 w-[420px] h-[420px] rounded-full bg-amber-500/10 blur-[140px] pointer-events-none" />
+      <div aria-hidden="true" className="absolute top-1/3 -start-32 w-[740px] h-[740px] -translate-y-32 bg-radial-[closest-side] from-blue-600/15 to-transparent pointer-events-none" />
+      <div aria-hidden="true" className="absolute -bottom-32 -end-32 w-[680px] h-[680px] bg-radial-[closest-side] from-amber-500/10 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         

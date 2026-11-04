@@ -211,15 +211,25 @@ export function useStepScroll<S extends HTMLElement = HTMLElement, P extends HTM
       touchStartY = null;
     };
 
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
-    return () => {
+    // Non-passive wheel/touch listeners make the browser wait on the main thread before every scroll,
+    // so they are only attached while the section is within a viewport of the screen.
+    let attached = false;
+    const attach = () => {
+      if (attached) return;
+      attached = true;
+      lastY = window.scrollY;
+      update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('wheel', onWheel, { passive: false });
+      window.addEventListener('keydown', onKeyDown);
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd, { passive: true });
+      window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    };
+    const detach = () => {
+      if (!attached) return;
+      attached = false;
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
@@ -228,6 +238,17 @@ export function useStepScroll<S extends HTMLElement = HTMLElement, P extends HTM
       window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('touchcancel', onTouchEnd);
       cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? attach() : detach()),
+      { rootMargin: '100% 0px' },
+    );
+    observer.observe(section);
+    return () => {
+      observer.disconnect();
+      detach();
     };
   }, [pinRun, stickyTop, count, setActiveIndex]);
 
